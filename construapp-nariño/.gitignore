@@ -1,0 +1,87 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+yarn.lock
+# package-lock.json se versiona: es el lockfile oficial del monorepo (npm workspaces)
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# Testing
+coverage/
+.nyc_output/
+.jest-cache/
+.vitest/
+
+# Mobile/Expo
+.expo/
+.expo-shared/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+backend/data/
+
+# Uploads
+uploads/
+public/uploads/
+
+# IDE specific files
+.editorconfig
+.prettierignore
+.eslintignore
+
+# Project specific
+.vscode-test/
+test-results/

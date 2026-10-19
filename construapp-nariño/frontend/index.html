@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="ConstruApp Nariño - Aplicación de cálculo de materiales de construcción" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f5f2ec" />
+
+    <title>ConstruApp Nariño - Cálculo de Materiales</title>
+
+    <!-- Aplica el tema guardado antes del primer pintado para evitar un destello.
+         La preferencia la gestiona `src/hooks/useTheme.ts`. -->
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('construapp.theme');
+          var dark =
+            pref === 'dark' ||
+            (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) {
+            document.documentElement.classList.add('dark');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#12100e');
+          }
+        } catch (e) {
+          /* almacenamiento bloqueado: se queda el tema claro */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

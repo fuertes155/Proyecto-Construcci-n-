@@ -1,0 +1,9 @@
+﻿Issue Type,Summary,Description,Priority,Labels
+Epic,Fundación técnica de la plataforma,"Preparación del entorno, capa de datos base con modelos y migraciones, middleware y conexión a PostgreSQL y Redis.",High,epica
+Epic,Autenticación y gestión de cuentas,"Registro, inicio de sesión, refresh token con rotación, rutas protegidas y gestión de perfil.",High,epica
+Epic,Motor de cálculo de materiales,"Calculadoras de hormigón, ladrillo y mortero con desglose de materiales y costo estimado con precios locales.",High,epica
+Epic,Proyectos y presupuestos,"Crear proyectos, guardar cálculos y ver el presupuesto acumulado frente al objetivo.",High,epica
+Epic,Proveedores y precios locales,"Consultar los proveedores del mercado de Nariño, sus fichas y sus precios actuales.",High,epica
+Epic,Administración y back-office,"Carga manual del catálogo de materiales y de los precios por proveedor, y moderación de usuarios.",High,epica
+Epic,Calidad y experiencia transversal,"Diseño responsive, manejo de errores, integración continua, accesibilidad y cobertura de pruebas.",High,epica
+Epic,App móvil,"App Expo con calculadoras, autenticación y modo offline con sincronización para uso en obra.",Medium,epica

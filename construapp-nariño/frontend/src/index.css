@@ -1,0 +1,332 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Sistema de diseño de ConstruApp Nariño
+   Los colores son tokens semánticos (canales RGB) que Tailwind consume en
+   `tailwind.config.js`: usa `bg-surface`, `text-ink-muted`, `border-line`…
+   en vez de la paleta cruda de Tailwind para que el tema oscuro funcione solo.
+   Todos los pares texto/fondo cumplen contraste WCAG AA (4.5:1).
+   ========================================================================== */
+
+/* Los tokens van fuera de las capas de Tailwind para que nunca se purguen. */
+:root {
+  color-scheme: light;
+
+  /* Planos: papel de obra y concreto claro */
+  --canvas: 245 242 236;
+  --surface: 255 255 255;
+  --surface-muted: 247 244 239;
+  --surface-strong: 235 230 221;
+  --line: 228 222 211;
+  --line-strong: 207 199 185;
+  --line-control: 143 134 122;
+
+  /* Texto */
+  --ink: 28 25 21;
+  --ink-muted: 87 80 71;
+  --ink-subtle: 116 107 96;
+
+  /* Marca */
+  --brand: 194 65 12;
+  --brand-hover: 161 54 10;
+  --brand-soft: 253 235 221;
+  --brand-text: 179 58 9;
+  --brand-fg: 255 255 255;
+  --accent: 242 106 27;
+  --ring: 194 65 12;
+
+  /* Estados */
+  --info: 31 95 168;
+  --info-soft: 227 237 248;
+  --info-text: 27 79 140;
+  --success: 12 163 12;
+  --success-soft: 228 244 228;
+  --success-text: 10 93 10;
+  --warning: 250 178 25;
+  --warning-soft: 255 244 214;
+  --warning-text: 122 77 0;
+  --danger: 208 59 59;
+  --danger-soft: 252 233 231;
+  --danger-text: 168 35 35;
+  --danger-solid: 185 43 43;
+
+  /* Barra lateral y paneles oscuros */
+  --shell: 27 24 20;
+  --shell-raised: 38 33 28;
+  --shell-active: 46 40 34;
+  --shell-line: 50 44 38;
+  --shell-fg: 244 239 232;
+  --shell-muted: 166 157 145;
+
+  --shadow: 28 25 21;
+  --grid: 28 25 21;
+  --grid-alpha: 0.05;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --canvas: 18 16 14;
+  --surface: 27 24 21;
+  --surface-muted: 34 30 26;
+  --surface-strong: 45 40 35;
+  --line: 47 42 37;
+  --line-strong: 69 62 55;
+  --line-control: 125 116 105;
+
+  --ink: 243 239 233;
+  --ink-muted: 185 176 164;
+  --ink-subtle: 149 140 128;
+
+  --brand-soft: 59 33 18;
+  --brand-text: 255 154 87;
+  --accent: 249 115 22;
+  --ring: 251 146 60;
+
+  --info: 91 155 230;
+  --info-soft: 23 42 64;
+  --info-text: 156 196 245;
+  --success-soft: 17 48 26;
+  --success-text: 127 219 138;
+  --warning-soft: 58 44 8;
+  --warning-text: 248 206 106;
+  --danger-soft: 61 23 22;
+  --danger-text: 246 166 160;
+
+  --shell: 12 11 9;
+  --shell-raised: 23 20 17;
+  --shell-active: 32 28 24;
+  --shell-line: 38 34 30;
+
+  --shadow: 0 0 0;
+  --grid: 243 239 233;
+  --grid-alpha: 0.045;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: rgb(var(--brand) / 0.22);
+  }
+
+  /* Foco visible y consistente para teclado */
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Campos numéricos sin flechas: la unidad va dentro del campo */
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Evita el fondo amarillo/azul del autocompletado del navegador */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: rgb(var(--ink));
+    caret-color: rgb(var(--ink));
+    transition:
+      background-color 600000s 0s,
+      color 600000s 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* ------------------------------------------------------------ tipografía */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-ink-subtle;
+  }
+
+  .title-page {
+    @apply font-display text-[2rem] font-semibold leading-[1.05] text-ink sm:text-[2.5rem];
+  }
+
+  .title-section {
+    @apply font-display text-2xl font-semibold leading-tight text-ink;
+  }
+
+  .link {
+    @apply font-semibold text-brand-text underline decoration-brand-text/30 underline-offset-4 transition-colors hover:decoration-brand-text;
+  }
+
+  /* --------------------------------------------------------------- tarjetas */
+  .card {
+    @apply rounded-lg border border-line bg-surface shadow-card;
+  }
+
+  .card-interactive {
+    @apply transition duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-raised;
+  }
+
+  /* ---------------------------------------------------------------- botones */
+  .btn {
+    @apply inline-flex min-h-[2.75rem] select-none items-center justify-center gap-2 whitespace-nowrap rounded-md border border-transparent px-4 text-[0.9375rem] font-semibold leading-none transition duration-150;
+  }
+  .btn:disabled {
+    @apply pointer-events-none opacity-55;
+  }
+  .btn svg {
+    @apply h-[1.2em] w-[1.2em] shrink-0;
+  }
+  .btn-sm {
+    @apply min-h-[2.25rem] px-3 text-sm;
+  }
+  .btn-lg {
+    @apply min-h-[3.25rem] px-6 text-base;
+  }
+  .btn-primary {
+    @apply bg-brand text-brand-fg shadow-card hover:bg-brand-hover active:translate-y-px;
+  }
+  .btn-secondary {
+    @apply border-line-strong bg-surface text-ink hover:border-line-control hover:bg-surface-muted active:translate-y-px;
+  }
+  .btn-ghost {
+    @apply text-ink-muted hover:bg-surface-strong hover:text-ink;
+  }
+  .btn-danger {
+    @apply bg-danger-solid text-white shadow-card hover:brightness-90 active:translate-y-px;
+  }
+  .btn-danger-ghost {
+    @apply text-danger-text hover:bg-danger-soft;
+  }
+  /* Sobre paneles oscuros (barra lateral, portada) */
+  .btn-on-dark {
+    @apply border-shell-line bg-shell-raised text-shell-fg hover:bg-shell-active;
+  }
+
+  .icon-btn {
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-ink-muted transition hover:bg-surface-strong hover:text-ink;
+  }
+  .icon-btn:disabled {
+    @apply pointer-events-none opacity-50;
+  }
+  .icon-btn svg {
+    @apply h-5 w-5;
+  }
+  .icon-btn-danger {
+    @apply hover:bg-danger-soft hover:text-danger-text;
+  }
+
+  /* ------------------------------------------------------------ formularios */
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+
+  .input {
+    @apply block min-h-[2.75rem] w-full rounded-md border border-line-control bg-surface px-3 py-2 text-base text-ink transition placeholder:text-ink-subtle;
+    @apply focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15;
+    @apply disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-ink-subtle;
+  }
+  .input[aria-invalid='true'] {
+    @apply border-danger focus:border-danger focus:ring-danger/15;
+  }
+  select.input {
+    @apply pr-10;
+  }
+  textarea.input {
+    @apply min-h-[5.5rem] resize-y leading-relaxed;
+  }
+
+  .field-hint {
+    @apply mt-1.5 text-sm text-ink-subtle;
+  }
+  .field-error {
+    @apply mt-1.5 flex items-start gap-1.5 text-sm font-medium text-danger-text;
+  }
+  .field-error svg {
+    @apply mt-0.5 h-4 w-4 shrink-0;
+  }
+
+  /* ------------------------------------------------------------------ tablas */
+  /* `relative`: ancla aquí los textos `sr-only` (posición absoluta) de las celdas; sin esto
+     escapan del contenedor con scroll horizontal y ensanchan toda la página en móvil. */
+  .data-table {
+    @apply relative w-full border-collapse text-left text-sm;
+  }
+  /* `:where()` deja la especificidad en una sola clase: las utilidades de Tailwind
+     puestas en una celda (`text-ink-muted`, `py-1`…) pueden sobrescribir estos valores. */
+  .data-table :where(thead th) {
+    @apply whitespace-nowrap border-b border-line bg-surface-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-muted;
+  }
+  .data-table :where(tbody td) {
+    @apply border-b border-line px-4 py-3 align-middle text-ink;
+  }
+  .data-table :where(tbody tr:last-child td) {
+    @apply border-b-0;
+  }
+  .data-table :where(tbody tr) {
+    @apply transition-colors hover:bg-surface-muted;
+  }
+  /* Columnas numéricas: a la derecha y con cifras tabulares para que alineen */
+  .data-table .num {
+    @apply text-right tabular-nums;
+  }
+
+  /* -------------------------------------------------------------- utilitarios */
+  /* Papel milimetrado: la retícula de un plano de obra */
+  .blueprint {
+    background-image:
+      linear-gradient(rgb(var(--grid) / var(--grid-alpha)) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--grid) / var(--grid-alpha)) 1px, transparent 1px),
+      linear-gradient(rgb(var(--grid) / calc(var(--grid-alpha) * 1.6)) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--grid) / calc(var(--grid-alpha) * 1.6)) 1px, transparent 1px);
+    background-size:
+      16px 16px,
+      16px 16px,
+      80px 80px,
+      80px 80px;
+    background-position: -1px -1px;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-surface-strong;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgb(var(--surface) / 0.65), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+
+  .skip-link {
+    @apply sr-only rounded-md bg-brand px-4 py-2 font-semibold text-brand-fg focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100];
+  }
+}

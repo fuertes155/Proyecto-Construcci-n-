@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "ConstruApp Nariño",
+    "slug": "construapp-narino",
+    "scheme": "construapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.construapp.narino"
+    },
+    "android": {
+      "package": "com.construapp.narino",
+      "adaptiveIcon": {
+        "backgroundColor": "#c2410c"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:5000/api"
+    }
+  }
+}

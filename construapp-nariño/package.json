@@ -1,0 +1,42 @@
+{
+  "name": "construapp-narino",
+  "version": "1.0.0",
+  "description": "Aplicación de cálculo de materiales de construcción para Nariño, Colombia",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.6.0",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "mobile"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:backend": "npm run dev --workspace=construapp-backend",
+    "dev:frontend": "npm run dev --workspace=construapp-frontend",
+    "dev:mobile": "npm run start --workspace=construapp-mobile",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present"
+  },
+  "overrides": {
+    "ajv-keywords": {
+      "ajv": "8.20.0"
+    }
+  },
+  "keywords": [
+    "construcción",
+    "materiales",
+    "cálculo",
+    "Nariño",
+    "Colombia"
+  ],
+  "author": "ConstruApp Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
