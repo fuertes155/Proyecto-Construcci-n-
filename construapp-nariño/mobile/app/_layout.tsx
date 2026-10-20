@@ -20,16 +20,14 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <StatusBar style="light" />
+          <StatusBar style="dark" />
           <Stack
             screenOptions={{
-              headerStyle: { backgroundColor: '#c2410c' },
-              headerTintColor: '#ffffff',
-              headerTitleStyle: { fontWeight: '700' },
+              headerShown: false,
               contentStyle: { backgroundColor: '#f5f2ec' },
             }}
           >
-            <Stack.Screen name="index" options={{ title: 'ConstruApp Nariño' }} />
+            <Stack.Screen name="index" />
           </Stack>
         </QueryClientProvider>
       </SafeAreaProvider>
