@@ -34,6 +34,10 @@ export interface PricedMaterial {
   totalPrice: number | null;
   currency: 'COP';
   provider: { id: string; name: string } | null;
+  sourceUrl: string | null;
+  sourceProduct: string | null;
+  sourceNotes: string | null;
+  checkedAt: Date | null;
 }
 
 export interface PricedResult {
@@ -92,6 +96,10 @@ export async function priceItems(items: Item[]): Promise<PricedResult> {
         totalPrice: null,
         currency: 'COP',
         provider: null,
+        sourceUrl: null,
+        sourceProduct: null,
+        sourceNotes: null,
+        checkedAt: null,
       };
     }
 
@@ -114,6 +122,10 @@ export async function priceItems(items: Item[]): Promise<PricedResult> {
       totalPrice: cheapest ? round(cheapest.price * item.quantity) : null,
       currency: 'COP',
       provider: provider ? { id: provider.id, name: provider.name } : null,
+      sourceUrl: cheapest?.row.sourceUrl ?? null,
+      sourceProduct: cheapest?.row.sourceProduct ?? null,
+      sourceNotes: cheapest?.row.sourceNotes ?? null,
+      checkedAt: cheapest?.row.checkedAt ?? null,
     };
   });
 

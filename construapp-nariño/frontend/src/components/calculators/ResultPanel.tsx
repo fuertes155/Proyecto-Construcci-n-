@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { PiFloppyDisk, PiStorefront } from 'react-icons/pi';
 import { Link } from 'react-router-dom';
-import type { CalculationResult } from '../../services/calculators';
+import type { CalculationResult, PricedMaterial } from '../../services/calculators';
 import type { ProjectListItem } from '../../services/projects';
 import { formatCOP, formatDateTime, formatPct, formatQty } from '../../utils/format';
 import Alert from '../ui/Alert';
+import PriceSource from '../PriceSource';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import { CALCULATOR_META } from './calculatorMeta';
@@ -15,6 +16,20 @@ interface ResultPanelProps {
   isLoggedIn: boolean;
   onSave: (projectId: string) => void;
   saving: boolean;
+  outdated?: boolean;
+}
+
+function MaterialInfo({ material }: { material: PricedMaterial }) {
+  return (
+    <>
+      <p className="font-semibold">{material.name}</p>
+      <p className="mt-0.5 flex items-start gap-1 text-xs text-ink-subtle">
+        <PiStorefront aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0" />
+        {material.provider?.name ?? 'Sin precio registrado'}
+      </p>
+      <PriceSource price={material} />
+    </>
+  );
 }
 
 export default function ResultPanel({
@@ -23,6 +38,7 @@ export default function ResultPanel({
   isLoggedIn,
   onSave,
   saving,
+  outdated = false,
 }: ResultPanelProps) {
   const [projectId, setProjectId] = useState('');
   const meta = CALCULATOR_META[result.calculatorType];
@@ -44,7 +60,45 @@ export default function ResultPanel({
         <Badge tone="neutral">Desperdicio {formatPct(result.wastePct)}</Badge>
       </div>
 
-      <div className="overflow-x-auto border-t border-line">
+      {outdated && (
+        <div className="border-t border-line p-5 sm:px-6">
+          <Alert tone="warning" title="Las medidas cambiaron">
+            Vuelve a calcular para actualizar las cantidades y el presupuesto antes de guardar.
+          </Alert>
+        </div>
+      )}
+
+      <div className="divide-y divide-line border-t border-line sm:hidden print:hidden">
+        {result.materials.map((m) => (
+          <article key={m.role} className="p-5" aria-label={`Material: ${m.name}`}>
+            <p className="font-semibold text-ink">{m.name}</p>
+            <p className="mt-1 text-xs text-ink-muted">
+              {m.provider?.name ?? 'Sin precio registrado'}
+            </p>
+            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 rounded-md border border-line bg-surface-muted p-3 text-sm">
+              <div className="min-w-0">
+                <dt className="text-xs text-ink-subtle">Cantidad</dt>
+                <dd className="mt-1 font-semibold tabular-nums">
+                  {formatQty(m.quantity)} <span className="font-normal">{m.unit}</span>
+                </dd>
+              </div>
+              <div className="min-w-0 text-right">
+                <dt className="text-xs text-ink-subtle">Precio unitario</dt>
+                <dd className="mt-1 font-semibold tabular-nums">{formatCOP(m.pricePerUnit)}</dd>
+              </div>
+              <div className="col-span-2 flex flex-wrap items-baseline justify-between gap-2 border-t border-line pt-3">
+                <dt className="font-medium text-ink-muted">Subtotal</dt>
+                <dd className="font-semibold tabular-nums text-ink">{formatCOP(m.totalPrice)}</dd>
+              </div>
+            </dl>
+            <div className="mt-3">
+              <PriceSource price={m} />
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto border-t border-line sm:block print:block">
         <table className="data-table">
           <thead>
             <tr>
@@ -64,11 +118,7 @@ export default function ResultPanel({
             {result.materials.map((m) => (
               <tr key={m.role}>
                 <td>
-                  <p className="font-semibold">{m.name}</p>
-                  <p className="mt-0.5 flex items-start gap-1 text-xs text-ink-subtle">
-                    <PiStorefront aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0" />
-                    {m.provider?.name ?? 'Sin precio registrado'}
-                  </p>
+                  <MaterialInfo material={m} />
                 </td>
                 <td className="num">
                   {/* Si no cabe en una línea, el corte cae entre el número y la unidad */}
@@ -98,7 +148,9 @@ export default function ResultPanel({
 
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-t border-line bg-surface-muted p-5 sm:px-6">
         <div>
-          <p className="text-sm font-medium text-ink-muted">Total estimado</p>
+          <p className="text-sm font-medium text-ink-muted">
+            {outdated ? 'Total anterior · pendiente de recalcular' : 'Total estimado'}
+          </p>
           <p className="mt-1 text-[2.5rem] font-semibold leading-none text-ink sm:text-5xl">
             {formatCOP(result.totalCost)}
           </p>
@@ -129,7 +181,7 @@ export default function ResultPanel({
             </div>
             <Button
               variant="secondary"
-              disabled={!projectId}
+              disabled={!projectId || outdated}
               loading={saving}
               icon={<PiFloppyDisk aria-hidden="true" />}
               onClick={() => onSave(projectId)}
@@ -157,8 +209,8 @@ export default function ResultPanel({
       </div>
 
       <p className="border-t border-line px-5 py-3 text-xs text-ink-subtle sm:px-6">
-        Las cantidades son aproximadas (referencias de obra). Valídalas con un profesional antes
-        de comprar.
+        Las cantidades son aproximadas (referencias de obra). Valídalas con un profesional antes de
+        comprar.
       </p>
     </section>
   );

@@ -84,9 +84,10 @@ describe('POST /api/calculators/concrete', () => {
       .post('/api/calculators/concrete')
       .send({ length: 1, width: 1, height: 1 });
     const cement = res.body.materials.find((m: { role: string }) => m.role === 'cement');
-    // En el seed, "Ferretería La Roca (demo)" tiene el cemento más barato (34200).
-    expect(cement.pricePerUnit).toBe(34200);
-    expect(cement.provider.name).toContain('La Roca');
+    expect(cement.pricePerUnit).toBe(32000);
+    expect(cement.provider.name).toBe('Central de Materiales Pasto');
+    expect(cement.sourceUrl).toBe('https://centraldematerialespasto.com/');
+    expect(cement.checkedAt).toMatch(/^2026-11-05/);
   });
 
   it('un % de desperdicio mayor aumenta las cantidades', async () => {

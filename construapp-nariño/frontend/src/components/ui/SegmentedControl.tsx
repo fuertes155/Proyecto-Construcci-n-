@@ -55,7 +55,7 @@ export default function SegmentedControl<T extends string>({
           className={clsx(
             'flex flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded font-semibold transition data-[disabled]:cursor-not-allowed [&>svg]:h-[1.15rem] [&>svg]:w-[1.15rem]',
             // Con texto, algo más compacto en móvil para que tres opciones quepan en 320 px
-            iconOnly ? 'h-8 w-9' : 'min-h-[2.25rem] px-2 text-[0.8125rem] sm:px-3 sm:text-sm',
+            iconOnly ? 'h-10 w-10' : 'min-h-10 px-2 text-[0.8125rem] sm:px-3 sm:text-sm',
             tone === 'shell'
               ? 'text-shell-muted hover:text-shell-fg data-[checked]:bg-shell-active data-[checked]:text-shell-fg'
               : 'text-ink-muted hover:text-ink data-[checked]:bg-surface data-[checked]:text-ink data-[checked]:shadow-card'

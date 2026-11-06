@@ -39,9 +39,9 @@ describe('GET /api/materials (público)', () => {
     expect(res.body.categories).toEqual(expect.arrayContaining(['acero', 'cubierta', 'hidráulica']));
 
     const cement = res.body.materials.find((m: CatalogMaterial) => m.name === 'Cemento gris');
-    expect(cement.prices).toHaveLength(3);
-    expect(cement.bestPrice).toMatchObject({ price: 34200 });
-    expect(cement.bestPrice.providerName).toContain('La Roca');
+    expect(cement.prices).toHaveLength(2);
+    expect(cement.bestPrice).toMatchObject({ price: 32000 });
+    expect(cement.bestPrice.providerName).toBe('Central de Materiales Pasto');
     const prices = cement.prices.map((p: { price: number }) => p.price);
     expect(prices).toEqual([...prices].sort((a, b) => a - b));
   });
@@ -62,35 +62,35 @@ describe('GET /api/providers (público)', () => {
   it('lista los proveedores con lo que ofrecen (HU-04.1)', async () => {
     const res = await request(app).get('/api/providers');
     expect(res.status).toBe(200);
-    expect(res.body.total).toBe(3);
+    expect(res.body.total).toBe(7);
     expect(res.body.providers[0]).toMatchObject({
       name: expect.any(String),
       location: expect.any(String),
       rating: expect.any(Number),
-      materialsOffered: 33,
+      materialsOffered: 8,
     });
     // Ordenados por calificación, de mayor a menor
     const ratings = res.body.providers.map((p: { rating: number }) => p.rating);
     expect(ratings).toEqual([...ratings].sort((a, b) => b - a));
-    expect(res.body.locations).toEqual(['Ipiales, Nariño', 'Pasto, Nariño']);
+    expect(res.body.locations).toEqual(expect.arrayContaining(['Pasto, Nariño', 'Bogotá, Cundinamarca']));
   });
 
   it('filtra por ubicación y calificación mínima (HU-04.2)', async () => {
     const pasto = await request(app).get('/api/providers').query({ location: 'pasto' });
-    expect(pasto.body.total).toBe(2);
+    expect(pasto.body.total).toBe(1);
+    expect(pasto.body.providers[0].name).toBe('Central de Materiales Pasto');
     const top = await request(app).get('/api/providers').query({ location: 'Pasto', rating: 4.5 });
-    expect(top.body.providers.map((p: { name: string }) => p.name)).toEqual([
-      'Depósito El Constructor (demo)',
-    ]);
+    // No se inventan calificaciones para los comercios importados.
+    expect(top.body.providers).toEqual([]);
   });
 
   it('filtra por material y por categoría de material', async () => {
     const materials = await request(app).get('/api/materials').query({ q: 'teja de zinc' });
     const zinc = materials.body.materials[0];
     const byMaterial = await request(app).get('/api/providers').query({ material: zinc.id });
-    expect(byMaterial.body.total).toBe(3);
+    expect(byMaterial.body.providers.map((p: { name: string }) => p.name)).toEqual(['Homecenter Colombia']);
     const byCategory = await request(app).get('/api/providers').query({ category: 'madera' });
-    expect(byCategory.body.total).toBe(3);
+    expect(byCategory.body.providers.map((p: { name: string }) => p.name)).toEqual(['Loencuentras']);
     const none = await request(app).get('/api/providers').query({ category: 'inexistente' });
     expect(none.body.total).toBe(0);
   });
@@ -102,7 +102,7 @@ describe('GET /api/providers (público)', () => {
     expect(res.body.providers.map((p: { name: string }) => p.name)).not.toContain(
       'Proveedor sin precios'
     );
-    expect(res.body.total).toBe(3);
+    expect(res.body.total).toBe(7);
   });
 
   it('rechaza filtros inválidos con 400', async () => {
@@ -119,12 +119,16 @@ describe('GET /api/providers/:id (público)', () => {
     const res = await request(app).get(`/api/providers/${id}`);
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ id, phone: expect.any(String), email: expect.any(String) });
-    expect(res.body.prices).toHaveLength(33);
+    expect(res.body.prices).toHaveLength(8);
     expect(res.body.prices[0]).toMatchObject({
       name: expect.any(String),
       unit: expect.any(String),
       price: expect.any(Number),
       updatedAt: expect.any(String),
+      sourceUrl: expect.stringMatching(/^https:\/\//),
+      sourceProduct: expect.any(String),
+      sourceNotes: expect.any(String),
+      checkedAt: expect.stringMatching(/^2026-11-05/),
     });
   });
 

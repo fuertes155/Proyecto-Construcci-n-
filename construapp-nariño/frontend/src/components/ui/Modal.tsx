@@ -49,13 +49,13 @@ export default function Modal({
           <DialogPanel
             transition
             className={clsx(
-              'w-full rounded-t-xl border border-line bg-surface pb-[env(safe-area-inset-bottom)] shadow-overlay transition duration-200 ease-out data-[closed]:translate-y-4 data-[closed]:opacity-0 sm:rounded-xl',
+              'w-full rounded-t-2xl border border-line bg-surface pb-[env(safe-area-inset-bottom)] shadow-overlay transition duration-200 ease-out data-[closed]:translate-y-4 data-[closed]:opacity-0 sm:rounded-2xl',
               SIZE_CLASS[size]
             )}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
+            <div className="flex items-start justify-between gap-4 rounded-t-2xl border-b border-line bg-surface-muted px-5 py-5 sm:px-6">
               <div className="min-w-0">
-                <DialogTitle className="font-display text-2xl font-semibold leading-tight text-ink">
+                <DialogTitle className="font-display text-[1.75rem] font-semibold leading-tight text-ink">
                   {view.title}
                 </DialogTitle>
                 {view.description && (

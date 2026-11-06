@@ -24,19 +24,23 @@ export default function EmptyState({
   return (
     <div
       className={clsx(
-        'flex flex-col items-center px-6 py-12 text-center',
+        'flex flex-col items-center px-5 py-12 text-center sm:px-8 sm:py-14',
         !bare && 'card blueprint',
         className
       )}
     >
       <span
         aria-hidden="true"
-        className="flex h-14 w-14 items-center justify-center rounded-xl border border-line bg-surface text-brand-text shadow-card [&>svg]:h-7 [&>svg]:w-7"
+        className="flex h-16 w-16 items-center justify-center rounded-2xl border border-brand/15 bg-brand-soft text-brand-text shadow-card [&>svg]:h-8 [&>svg]:w-8"
       >
         {icon}
       </span>
       <h2 className="mt-4 font-display text-2xl font-semibold leading-tight text-ink">{title}</h2>
-      {description && <p className="mt-2 max-w-md text-ink-muted">{description}</p>}
+      {description && (
+        <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-muted sm:text-base">
+          {description}
+        </p>
+      )}
       {action && <div className="mt-6 flex flex-wrap justify-center gap-2">{action}</div>}
     </div>
   );

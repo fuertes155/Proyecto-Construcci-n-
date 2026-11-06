@@ -8,7 +8,7 @@
 
 ## 📋 Descripción
 
-ConstruApp Nariño es una solución integral diseñada para ayudar a profesionales, maestros de obra y propietarios en el cálculo preciso de materiales de construcción. La aplicación integra precios en tiempo real del mercado local de Nariño, proporcionando herramientas de presupuestación, minimización de desperdicios y optimización de costos.
+ConstruApp Nariño ayuda a profesionales, maestros de obra y propietarios a calcular materiales de construcción. Integra precios publicados por comercios de Pasto y Colombia, con enlace a la fuente, presentación, condiciones y fecha de consulta. Consulta el [alcance y actualización de los precios](./docs/PRECIOS-REALES.md).
 
 ## 🎯 Características Principales
 
@@ -20,11 +20,11 @@ ConstruApp Nariño es una solución integral diseñada para ayudar a profesional
   - Cálculo de acabados (pintura, baldosas, revoque)
   - Cálculo de instalaciones (tuberías, cableado eléctrico)
 
-- **Precios en Tiempo Real**
-  - Base de datos de proveedores locales de Nariño
-  - Actualización diaria de precios
+- **Precios publicados por comercios reales**
+  - Catálogo de proveedores de Pasto y otras ciudades de Colombia
+  - Actualización manual con fuente y fecha de consulta
   - Comparativa de precios entre proveedores
-  - Historial de variación de precios
+  - Condiciones de compra y disponibilidad indicadas por la fuente
 
 - **Gestión de Proyectos**
   - Creación de múltiples proyectos

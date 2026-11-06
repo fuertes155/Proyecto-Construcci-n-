@@ -14,7 +14,8 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "migrate": "node --disable-warning=DEP0180 --import ./scripts/register-ts-node.js src/migrations/run.ts",
-    "seed": "node --disable-warning=DEP0180 --import ./scripts/register-ts-node.js src/seeds/run.ts"
+    "seed": "node --disable-warning=DEP0180 --import ./scripts/register-ts-node.js src/seeds/run.ts",
+    "seed:catalog": "node --disable-warning=DEP0180 --import ./scripts/register-ts-node.js src/seeds/catalog.ts"
   },
   "keywords": [
     "construcción",

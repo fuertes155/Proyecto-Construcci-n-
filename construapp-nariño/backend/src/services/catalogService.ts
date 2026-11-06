@@ -13,6 +13,10 @@ export interface CatalogPrice {
   location: string;
   price: number;
   updatedAt: Date;
+  sourceUrl: string | null;
+  sourceProduct: string | null;
+  sourceNotes: string | null;
+  checkedAt: Date | null;
 }
 
 export interface CatalogMaterial {
@@ -44,6 +48,10 @@ export interface ProviderPrice {
   category: string | null;
   price: number;
   updatedAt: Date;
+  sourceUrl: string | null;
+  sourceProduct: string | null;
+  sourceNotes: string | null;
+  checkedAt: Date | null;
 }
 
 interface MaterialFilter {
@@ -90,6 +98,10 @@ export const catalogService = {
             location: provider?.location ?? '',
             price: Number(p.price),
             updatedAt: p.updatedAt,
+            sourceUrl: p.sourceUrl,
+            sourceProduct: p.sourceProduct,
+            sourceNotes: p.sourceNotes,
+            checkedAt: p.checkedAt,
           };
         })
         .sort((a, b) => a.price - b.price);
@@ -208,6 +220,10 @@ export const catalogService = {
             category: material.category,
             price: Number(price.price),
             updatedAt: price.updatedAt,
+            sourceUrl: price.sourceUrl,
+            sourceProduct: price.sourceProduct,
+            sourceNotes: price.sourceNotes,
+            checkedAt: price.checkedAt,
           },
         ];
       })

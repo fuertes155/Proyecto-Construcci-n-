@@ -7,13 +7,10 @@ import {
   PiGauge,
   PiListChecks,
   PiShieldCheck,
+  PiStorefront,
 } from 'react-icons/pi';
 import { Link } from 'react-router-dom';
-import {
-  CALCULATOR_IDS,
-  CALCULATOR_META,
-  calculatorPath,
-} from '../components/calculators/calculatorMeta';
+import CalculatorCatalog from '../components/calculators/CalculatorCatalog';
 import ProjectCard from '../components/projects/ProjectCard';
 import Alert from '../components/ui/Alert';
 import Button, { ButtonLink } from '../components/ui/Button';
@@ -72,7 +69,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="animate-rise space-y-10">
+    <div className="animate-rise space-y-8">
       <PageHeader
         eyebrow={today}
         title={`Hola, ${user?.name?.split(' ')[0] ?? 'bienvenido'}`}
@@ -87,6 +84,37 @@ export default function Dashboard() {
           </ButtonLink>
         }
       />
+
+      <section aria-labelledby="inicio-siguiente-paso" className="workspace-banner">
+        <div
+          aria-hidden="true"
+          className="dark blueprint pointer-events-none absolute inset-y-0 right-0 w-2/3 opacity-50 [mask-image:linear-gradient(to_right,transparent,black)]"
+        />
+        <div className="relative flex flex-col justify-between gap-5 xl:flex-row xl:items-center">
+          <div>
+            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-accent">
+              Planea antes de comprar
+            </p>
+            <h2
+              id="inicio-siguiente-paso"
+              className="mt-2 max-w-xl font-display text-3xl font-semibold leading-tight sm:text-4xl"
+            >
+              Un buen cálculo es un buen comienzo.
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-shell-muted">
+              Elige qué vas a construir y reúne tus materiales con un presupuesto más claro.
+            </p>
+          </div>
+          <ButtonLink
+            to="/providers"
+            variant="on-dark"
+            icon={<PiStorefront aria-hidden="true" />}
+            className="w-fit shrink-0"
+          >
+            Consultar precios publicados
+          </ButtonLink>
+        </div>
+      </section>
 
       {/* ------------------------------------------------------------ cifras */}
       <section aria-label="Resumen de tus proyectos">
@@ -163,29 +191,8 @@ export default function Dashboard() {
         <h2 id="inicio-calculadoras" className="title-section">
           Calcular materiales
         </h2>
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {CALCULATOR_IDS.map((id) => {
-            const meta = CALCULATOR_META[id];
-            return (
-              <Link
-                key={id}
-                to={calculatorPath(id)}
-                className="card card-interactive group flex items-start gap-3 p-4"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-soft text-brand-text [&>svg]:h-5 [&>svg]:w-5">
-                  {meta.icon}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold text-ink">{meta.label}</span>
-                  <span className="mt-0.5 block text-sm text-ink-muted">{meta.description}</span>
-                </span>
-                <PiArrowRight
-                  aria-hidden="true"
-                  className="mt-1 h-5 w-5 shrink-0 text-ink-subtle transition group-hover:translate-x-0.5 group-hover:text-brand-text"
-                />
-              </Link>
-            );
-          })}
+        <div className="mt-3">
+          <CalculatorCatalog compact />
         </div>
       </section>
 
@@ -230,10 +237,7 @@ export default function Dashboard() {
       </section>
 
       {user?.role === 'admin' && (
-        <Link
-          to="/admin"
-          className="card card-interactive group flex items-center gap-4 p-5"
-        >
+        <Link to="/admin" className="card card-interactive group flex items-center gap-4 p-5">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-surface-strong text-ink-muted [&>svg]:h-6 [&>svg]:w-6">
             <PiShieldCheck aria-hidden="true" />
           </span>

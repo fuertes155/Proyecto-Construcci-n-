@@ -13,6 +13,8 @@ interface StatTileProps {
   /** Contenido extra entre la cifra y el contexto (p. ej. un medidor). */
   children?: ReactNode;
   className?: string;
+  /** Resumen compacto en móvil, con el detalle completo a partir de tablet. */
+  compactOnMobile?: boolean;
 }
 
 /** Cifra de cabecera: etiqueta, valor y contexto. */
@@ -24,23 +26,58 @@ export default function StatTile({
   icon,
   children,
   className,
+  compactOnMobile = false,
 }: StatTileProps) {
   return (
-    <div className={clsx('card flex min-w-0 flex-col p-4 sm:p-5', className)}>
+    <div
+      className={clsx(
+        'card flex min-w-0 flex-col border-t-2 border-t-brand/30',
+        compactOnMobile ? 'p-3 sm:p-5' : 'p-4 sm:p-5',
+        className
+      )}
+    >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-ink-muted">{label}</p>
+        <p
+          className={clsx(
+            'font-medium text-ink-muted',
+            compactOnMobile ? 'text-xs sm:text-sm' : 'text-sm'
+          )}
+        >
+          {label}
+        </p>
         {icon && (
-          <span aria-hidden="true" className="text-ink-subtle [&>svg]:h-5 [&>svg]:w-5">
+          <span
+            aria-hidden="true"
+            className={clsx(
+              'h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-muted text-brand-text [&>svg]:h-[1.125rem] [&>svg]:w-[1.125rem]',
+              compactOnMobile ? 'hidden sm:flex' : 'flex'
+            )}
+          >
             {icon}
           </span>
         )}
       </div>
       {/* Cifras proporcionales: las tabulares se reservan para columnas */}
-      <p className="mt-3 text-2xl font-semibold leading-none text-ink sm:text-[2rem]" title={title}>
+      <p
+        className={clsx(
+          'break-words font-display font-semibold leading-tight tracking-tight text-ink sm:text-[2.5rem]',
+          compactOnMobile ? 'mt-auto pt-2 text-2xl sm:mt-4 sm:pt-0' : 'mt-4 text-[2rem]'
+        )}
+        title={title}
+      >
         {value}
       </p>
       {children}
-      {caption && <p className="mt-2 text-sm text-ink-subtle">{caption}</p>}
+      {caption && (
+        <p
+          className={clsx(
+            'mt-2 text-xs leading-relaxed text-ink-subtle',
+            compactOnMobile && 'hidden sm:block'
+          )}
+        >
+          {caption}
+        </p>
+      )}
     </div>
   );
 }

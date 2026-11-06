@@ -59,7 +59,11 @@ export default function ProjectDetail() {
   const [calcToDelete, setCalcToDelete] = useState<ProjectCalculation | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: project, isLoading, isError } = useQuery({
+  const {
+    data: project,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['projects', projectId],
     queryFn: () => projectsApi.get(projectId!),
     enabled: !!projectId,
@@ -149,8 +153,9 @@ export default function ProjectDetail() {
       </Link>
 
       {/* ---------------------------------------------------------- cabecera */}
-      <header className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+      <header className="detail-header xl:flex-row xl:items-start xl:justify-between">
         <div className="min-w-0">
+          <p className="section-kicker mb-3">Ficha de la obra</p>
           <h1 className="title-page break-words">{project.name}</h1>
 
           {(project.location || project.startDate || project.endDate) && (
@@ -184,7 +189,7 @@ export default function ProjectDetail() {
               onChange={(status) => updateMutation.mutate({ status })}
               options={STATUS_OPTIONS}
               disabled={updateMutation.isPending}
-              className="w-full overflow-x-auto sm:w-auto"
+              className="w-full sm:w-auto [&>[role=radio]]:min-w-0 [&>[role=radio]]:whitespace-normal [&>[role=radio]]:text-center sm:[&>[role=radio]]:whitespace-nowrap"
             />
           </div>
         </div>
@@ -217,7 +222,7 @@ export default function ProjectDetail() {
 
       {/* ----------------------------------------------------------- cálculos */}
       <section className="card overflow-hidden" aria-labelledby="proyecto-calculos">
-        <div className="flex flex-wrap items-center justify-between gap-3 p-5 sm:px-6">
+        <div className="section-bar">
           <h2 id="proyecto-calculos" className="title-section">
             Cálculos ({project.calculations.length})
           </h2>
@@ -241,7 +246,7 @@ export default function ProjectDetail() {
             description="Ve a Calculadoras, haz un cálculo y guárdalo en este proyecto."
           />
         ) : (
-          <div className="overflow-x-auto border-t border-line">
+          <div className="overflow-x-auto">
             <table className="data-table">
               <thead>
                 <tr>
@@ -277,7 +282,7 @@ export default function ProjectDetail() {
                           >
                             <span
                               aria-hidden="true"
-                              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-strong text-ink-muted [&>svg]:h-5 [&>svg]:w-5"
+                              className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-strong text-ink-muted sm:flex [&>svg]:h-5 [&>svg]:w-5"
                             >
                               {CALCULATOR_META[c.calculatorType]?.icon}
                             </span>
@@ -294,7 +299,9 @@ export default function ProjectDetail() {
                                 open && 'rotate-180'
                               )}
                             />
-                            <span className="sr-only">{open ? 'Ocultar detalle' : 'Ver detalle'}</span>
+                            <span className="sr-only">
+                              {open ? 'Ocultar detalle' : 'Ver detalle'}
+                            </span>
                           </button>
                         </td>
                         <td className="num hidden whitespace-nowrap sm:table-cell">

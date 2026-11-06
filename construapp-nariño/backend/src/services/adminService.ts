@@ -85,6 +85,9 @@ export const adminPrices = {
     providerId: string;
     price: number;
     currency: string;
+    sourceUrl?: string | null;
+    sourceProduct?: string | null;
+    sourceNotes?: string | null;
   }) {
     const [material, provider] = await Promise.all([
       Material.findByPk(data.materialId),
@@ -100,11 +103,20 @@ export const adminPrices = {
         providerId: data.providerId,
         price: data.price,
         currency: data.currency,
+        sourceUrl: data.sourceUrl || null,
+        sourceProduct: data.sourceProduct || null,
+        sourceNotes: data.sourceNotes || null,
+        checkedAt: data.sourceUrl ? new Date() : null,
       },
     });
     if (!created) {
       row.price = data.price;
       row.currency = data.currency;
+      // Una nueva cotización no hereda la evidencia de un importe anterior.
+      row.sourceUrl = data.sourceUrl || null;
+      row.sourceProduct = data.sourceProduct || null;
+      row.sourceNotes = data.sourceNotes || null;
+      row.checkedAt = data.sourceUrl ? new Date() : null;
       await row.save();
     }
     return { price: row.toJSON(), created };

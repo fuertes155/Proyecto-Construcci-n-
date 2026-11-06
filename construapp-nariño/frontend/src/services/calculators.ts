@@ -26,6 +26,10 @@ export interface CalculatorTypeInfo {
 }
 
 export interface PricedMaterial {
+  sourceUrl?: string | null;
+  sourceProduct?: string | null;
+  sourceNotes?: string | null;
+  checkedAt?: string | null;
   id: string | null;
   role: string;
   name: string;

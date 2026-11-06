@@ -17,6 +17,8 @@ import Button, { IconButton } from '../../components/ui/Button';
 import { TextField } from '../../components/ui/Field';
 import Modal from '../../components/ui/Modal';
 import { TableSkeleton } from '../../components/ui/Skeleton';
+import SearchInput from '../../components/ui/SearchInput';
+import { matchesSearch } from '../../utils/search';
 import { adminApi, type AdminProvider, type CreateProviderInput } from '../../services/admin';
 import { apiErrorMessage } from '../../services/api';
 
@@ -70,7 +72,8 @@ function ProviderForm({
       location: values.location || undefined,
       phone: values.phone || undefined,
       email: values.email || undefined,
-      rating: values.rating === '' || values.rating === undefined ? undefined : Number(values.rating),
+      rating:
+        values.rating === '' || values.rating === undefined ? undefined : Number(values.rating),
       deliveryTime: values.deliveryTime || undefined,
     });
   };
@@ -144,11 +147,17 @@ function ProviderForm({
 }
 
 export default function AdminProviders() {
+  const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<AdminProvider | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: providers, isLoading, isError, refetch } = useQuery({
+  const {
+    data: providers,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['admin', 'providers'],
     queryFn: adminApi.providers.list,
   });
@@ -176,10 +185,23 @@ export default function AdminProviders() {
     onError: (err) => toast.error(apiErrorMessage(err, 'No se pudo actualizar el proveedor')),
   });
 
+  const visible =
+    providers?.filter((provider) =>
+      matchesSearch(
+        `${provider.name} ${provider.location} ${provider.email ?? ''} ${provider.phone ?? ''}`,
+        search
+      )
+    ) ?? [];
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="title-section">Proveedores</h2>
+        <div>
+          <h2 className="title-section">Proveedores</h2>
+          <p className="mt-1 text-sm text-ink-muted">
+            Mantén los datos de contacto y entrega de cada comercio.
+          </p>
+        </div>
         <Button icon={<PiPlus aria-hidden="true" />} onClick={() => setShowCreate(true)}>
           Nuevo proveedor
         </Button>
@@ -224,6 +246,18 @@ export default function AdminProviders() {
 
       {providers && (
         <div className="card overflow-hidden">
+          <div className="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:p-5">
+            <SearchInput
+              label="Buscar proveedores en administración"
+              value={search}
+              onChange={setSearch}
+              placeholder="Nombre, ubicación o contacto…"
+              className="flex-1"
+            />
+            <p className="shrink-0 text-xs text-ink-subtle" role="status">
+              {visible.length} de {providers.length} proveedores
+            </p>
+          </div>
           <div className="overflow-x-auto">
             {/* En móvil el contacto y la entrega pasan bajo el nombre */}
             <table className="data-table md:min-w-[46rem]">
@@ -233,7 +267,7 @@ export default function AdminProviders() {
                   <th scope="col" className="hidden md:table-cell">
                     Contacto
                   </th>
-                  <th scope="col" className="num">
+                  <th scope="col" className="num hidden sm:table-cell">
                     Calificación
                   </th>
                   <th scope="col" className="hidden md:table-cell">
@@ -245,7 +279,7 @@ export default function AdminProviders() {
                 </tr>
               </thead>
               <tbody>
-                {providers.map((p) => (
+                {visible.map((p) => (
                   <tr key={p.id}>
                     <td>
                       <p className="font-semibold">{p.name}</p>
@@ -258,6 +292,11 @@ export default function AdminProviders() {
                         {p.email && <p className="break-all">{p.email}</p>}
                         {p.deliveryTime && <p>Entrega: {p.deliveryTime}</p>}
                       </div>
+                      <p className="mt-1.5 text-xs text-ink-subtle sm:hidden">
+                        {p.rating > 0
+                          ? `${p.rating.toLocaleString('es-CO', { maximumFractionDigits: 1 })} de 5`
+                          : 'Sin calificaciones'}
+                      </p>
                     </td>
                     <td className="hidden text-ink-muted md:table-cell">
                       {p.phone || p.email ? (
@@ -269,14 +308,18 @@ export default function AdminProviders() {
                         '—'
                       )}
                     </td>
-                    <td className="num">
-                      <span className="inline-flex items-center gap-1 font-semibold">
-                        <PiStarFill aria-hidden="true" className="h-4 w-4 text-accent" />
-                        {p.rating.toLocaleString('es-CO', {
-                          minimumFractionDigits: 1,
-                          maximumFractionDigits: 1,
-                        })}
-                      </span>
+                    <td className="num hidden sm:table-cell">
+                      {p.rating > 0 ? (
+                        <span className="inline-flex items-center gap-1 font-semibold">
+                          <PiStarFill aria-hidden="true" className="h-4 w-4 text-accent" />
+                          {p.rating.toLocaleString('es-CO', {
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1,
+                          })}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-ink-subtle">Sin calificar</span>
+                      )}
                     </td>
                     <td className="hidden whitespace-nowrap text-ink-muted md:table-cell">
                       {p.deliveryTime ?? '—'}
@@ -288,10 +331,12 @@ export default function AdminProviders() {
                     </td>
                   </tr>
                 ))}
-                {providers.length === 0 && (
+                {visible.length === 0 && (
                   <tr>
                     <td colSpan={5} className="py-10 text-center text-ink-muted">
-                      Aún no hay proveedores registrados.
+                      {providers.length === 0
+                        ? 'Aún no hay proveedores registrados.'
+                        : 'Ningún proveedor coincide con la búsqueda.'}
                     </td>
                   </tr>
                 )}

@@ -26,12 +26,12 @@ export const requireAuth: RequestHandler = (req, _res, next) => {
 /** Restringe la ruta a determinados roles (RBAC). Usar después de `requireAuth`. */
 export const requireRole =
   (...roles: string[]): RequestHandler =>
-  (req, _res, next) => {
-    if (!req.user) return next(ApiError.unauthorized());
-    if (!roles.includes(req.user.role)) {
-      return next(ApiError.forbidden('No tienes permiso para esta acción'));
-    }
-    next();
-  };
+    (req, _res, next) => {
+      if (!req.user) return next(ApiError.unauthorized());
+      if (!roles.includes(req.user.role)) {
+        return next(ApiError.forbidden('No tienes permiso para esta acción'));
+      }
+      next();
+    };
 
 export default requireAuth;

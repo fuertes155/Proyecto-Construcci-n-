@@ -43,7 +43,9 @@ function fieldSchema(f: NumberField): ZodTypeAny {
     return z.string().refine((v) => values.includes(v), 'Elige una opción');
   }
   const range = (n: number) => `${formatQty(n)} ${f.unit}`;
-  let schema = z.coerce.number({ invalid_type_error: `${f.label} es obligatorio` });
+  let schema = z.coerce.number({
+    invalid_type_error: `${f.label} es obligatorio`,
+  });
   schema =
     f.min !== undefined
       ? schema.min(f.min, `Mínimo ${range(f.min)}`)
@@ -96,6 +98,18 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
 
   // El croquis refleja en vivo las medidas que se van escribiendo.
   const watched = useWatch({ control });
+  const sameNumber = (current: unknown, saved: unknown) =>
+    current === undefined && saved === undefined
+      ? true
+      : String(current ?? '').trim() !== '' && Number(current) === Number(saved);
+  const outdated =
+    lastInputs !== null &&
+    (fields.some((field) =>
+      field.options
+        ? watched[field.name] !== lastInputs[field.name]
+        : !sameNumber(watched[field.name], lastInputs[field.name])
+    ) ||
+      !sameNumber(watched.wastePct, lastInputs.wastePct));
   const choices = fields.filter((f) => f.options);
   const measures = fields.filter((f) => !f.options);
   const dims: Record<string, SketchDim> = Object.fromEntries(
@@ -126,12 +140,18 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
     if (!result || !window.matchMedia) return;
     if (window.matchMedia('(min-width: 1024px)').matches) return;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    resultRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    resultRef.current?.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
   }, [result]);
 
   const onSubmit = async (values: FormValues) => {
     const { wastePct, ...rest } = values;
-    const inputs = { ...rest, ...(wastePct !== undefined ? { wastePct } : {}) } as CalculatorInputs;
+    const inputs = {
+      ...rest,
+      ...(wastePct !== undefined ? { wastePct } : {}),
+    } as CalculatorInputs;
     try {
       const res = await run(inputs);
       setResult(res);
@@ -142,10 +162,22 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
       <form className="card overflow-hidden" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="flex items-center gap-3 border-b border-line px-5 py-4">
+          <span
+            aria-hidden="true"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand-text"
+          >
+            01
+          </span>
+          <div>
+            <h3 className="font-semibold">Datos de tu obra</h3>
+            <p className="text-sm text-ink-muted">Revisa las unidades de cada medida.</p>
+          </div>
+        </div>
         <div className="blueprint border-b border-line bg-surface-muted px-4 py-3">
-          <CalculatorSketch type={calculatorId} dims={dims} className="mx-auto max-w-sm" />
+          <CalculatorSketch type={calculatorId} dims={dims} className="mx-auto max-w-[16rem]" />
         </div>
 
         {/* Dos columnas también en móvil: son números cortos y así el botón queda a la vista */}
@@ -203,7 +235,7 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
               loading={isSubmitting}
               icon={<PiCalculator aria-hidden="true" />}
             >
-              {isSubmitting ? 'Calculando…' : 'Calcular'}
+              {isSubmitting ? 'Calculando…' : 'Calcular materiales'}
             </Button>
           </div>
         </div>
@@ -215,24 +247,45 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
             result={result}
             projects={projectsData?.projects}
             isLoggedIn={!!user}
-            onSave={(projectId) => saveMutation.mutate({ projectId })}
+            onSave={(projectId) => {
+              if (!outdated) saveMutation.mutate({ projectId });
+            }}
             saving={saveMutation.isPending}
+            outdated={outdated}
           />
         ) : (
-          <div className="flex min-h-[18rem] flex-col items-center justify-center rounded-lg border border-dashed border-line-strong px-6 py-12 text-center">
-            <span
-              aria-hidden="true"
-              className="flex h-14 w-14 items-center justify-center rounded-xl border border-line bg-surface text-ink-subtle shadow-card"
-            >
-              <PiListChecks className="h-7 w-7" />
-            </span>
-            <p className="mt-4 font-display text-2xl font-semibold leading-tight text-ink">
-              Aquí verás el resultado
-            </p>
-            <p className="mt-2 max-w-sm text-ink-muted">
-              Ingresa las medidas y presiona <strong className="font-semibold">Calcular</strong> para
-              obtener la lista de materiales y su costo con precios locales.
-            </p>
+          <div className="card overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-line px-5 py-4">
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-strong text-sm font-semibold text-ink-muted"
+              >
+                02
+              </span>
+              <h3 className="font-semibold">Materiales y presupuesto</h3>
+            </div>
+            <div className="blueprint flex min-h-[20rem] flex-col items-center justify-center px-6 py-12 text-center">
+              <span
+                aria-hidden="true"
+                className="flex h-14 w-14 items-center justify-center rounded-xl border border-line bg-surface text-ink-subtle shadow-card"
+              >
+                <PiListChecks className="h-7 w-7" />
+              </span>
+              <p className="mt-4 font-display text-2xl font-semibold leading-tight text-ink">
+                Aquí verás el resultado
+              </p>
+              <p className="mt-2 max-w-sm text-ink-muted">
+                Ingresa las medidas y presiona <strong className="font-semibold">Calcular</strong>{' '}
+                para obtener la lista de materiales y su costo con precios publicados.
+              </p>
+              <ul className="mt-6 flex flex-wrap justify-center gap-2 text-xs font-medium text-ink-muted">
+                {['Cantidades', 'Precios publicados', 'Costo estimado'].map((label) => (
+                  <li key={label} className="rounded-full border border-line bg-surface px-3 py-1">
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
       </div>

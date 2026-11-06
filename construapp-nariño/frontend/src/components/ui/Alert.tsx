@@ -32,7 +32,7 @@ export default function Alert({ tone = 'info', title, action, className, childre
     <div
       role={tone === 'danger' ? 'alert' : 'status'}
       className={clsx(
-        'flex items-start gap-3 rounded-lg px-4 py-3 text-sm',
+        'grid grid-cols-[1.25rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 rounded-lg px-4 py-4 text-sm sm:grid-cols-[1.25rem_minmax(0,1fr)_auto]',
         TONE[tone].box,
         className
       )}
@@ -42,7 +42,7 @@ export default function Alert({ tone = 'info', title, action, className, childre
         {title && <p className="font-semibold">{title}</p>}
         {children && <div className={clsx(title && 'mt-0.5')}>{children}</div>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="col-start-2 sm:col-start-3 sm:row-start-1">{action}</div>}
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import { api } from './api';
+import type { PriceSourceInfo } from './priceSource';
 
 /** Catálogo público (EP-04): materiales con precios por proveedor y directorio. */
 
-export interface CatalogPrice {
+export interface CatalogPrice extends PriceSourceInfo {
   providerId: string;
   providerName: string;
   location: string;
@@ -32,7 +33,7 @@ export interface CatalogProvider {
   categories: string[];
 }
 
-export interface ProviderPrice {
+export interface ProviderPrice extends PriceSourceInfo {
   materialId: string;
   name: string;
   unit: string;

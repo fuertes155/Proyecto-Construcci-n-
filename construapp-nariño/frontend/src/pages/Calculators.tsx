@@ -1,5 +1,4 @@
-import clsx from 'clsx';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import CalculatorPanel from '../components/calculators/CalculatorPanel';
 import {
   CALCULATOR_GROUPS,
@@ -13,6 +12,7 @@ import { calculatorsApi, type CalculatorId } from '../services/calculators';
 export default function Calculators() {
   // La calculadora activa vive en la URL (?tipo=brick) para poder enlazarla.
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const requested = params.get('tipo') as CalculatorId | null;
   const active: CalculatorId =
     requested && CALCULATOR_IDS.includes(requested) ? requested : CALCULATOR_IDS[0];
@@ -23,17 +23,46 @@ export default function Calculators() {
       <PageHeader
         eyebrow="Herramientas"
         title="Calculadoras"
-        description="Calcula los materiales de cada etapa de la obra con precios de proveedores locales de Nariño."
+        description="Calcula los materiales de cada etapa de la obra con precios publicados por comercios de Pasto y Colombia."
       />
+
+      <div className="card p-4 md:hidden">
+        <label htmlFor="elegir-calculadora" className="label">
+          ¿Qué vas a calcular?
+        </label>
+        <select
+          id="elegir-calculadora"
+          className="input"
+          value={active}
+          onChange={(event) =>
+            navigate(calculatorPath(event.target.value as CalculatorId), {
+              replace: true,
+            })
+          }
+        >
+          {CALCULATOR_GROUPS.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.ids.map((id) => (
+                <option key={id} value={id}>
+                  {CALCULATOR_META[id].label}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </div>
 
       <nav
         aria-label="Elegir calculadora"
-        className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,3fr)_minmax(0,2fr)]"
+        className="card hidden overflow-hidden p-3 md:grid md:grid-cols-3 md:gap-4"
       >
-        {CALCULATOR_GROUPS.map((group) => (
-          <div key={group.label}>
-            <p className="eyebrow mb-2">{group.label}</p>
-            <ul className="grid grid-cols-3 gap-2 lg:grid-cols-1">
+        {CALCULATOR_GROUPS.map((group, groupIndex) => (
+          <div key={group.label} className="min-w-0">
+            <p className="mb-2 flex items-center gap-2 px-2 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+              <span className="text-brand-text">0{groupIndex + 1}</span>
+              {group.label}
+            </p>
+            <ul className="grid grid-cols-3 gap-1">
               {group.ids.map((id) => {
                 const item = CALCULATOR_META[id];
                 const current = id === active;
@@ -43,24 +72,10 @@ export default function Calculators() {
                       to={calculatorPath(id)}
                       replace
                       aria-current={current ? 'page' : undefined}
-                      className={clsx(
-                        'group flex h-full flex-col items-center gap-2 rounded-lg border p-3 text-center shadow-card transition lg:flex-row lg:gap-3 lg:text-left',
-                        current
-                          ? 'border-brand bg-brand-soft'
-                          : 'border-line bg-surface hover:border-line-strong'
-                      )}
+                      className="calculator-switch"
                     >
-                      <span
-                        className={clsx(
-                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition [&>svg]:h-5 [&>svg]:w-5',
-                          current ? 'bg-brand text-brand-fg' : 'bg-surface-strong text-ink-muted'
-                        )}
-                      >
-                        {item.icon}
-                      </span>
-                      <span className="text-sm font-semibold leading-tight text-ink sm:text-[0.9375rem]">
-                        {item.label}
-                      </span>
+                      <span className="[&>svg]:h-5 [&>svg]:w-5">{item.icon}</span>
+                      <span>{item.label}</span>
                     </Link>
                   </li>
                 );

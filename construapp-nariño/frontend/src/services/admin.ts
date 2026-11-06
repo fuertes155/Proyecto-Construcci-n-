@@ -40,6 +40,10 @@ export interface CreateProviderInput {
 }
 
 export interface AdminPrice {
+  sourceUrl?: string | null;
+  sourceProduct?: string | null;
+  sourceNotes?: string | null;
+  checkedAt?: string | null;
   id: string;
   materialId: string;
   providerId: string;
@@ -56,6 +60,9 @@ export interface UpsertPriceInput {
   providerId: string;
   price: number;
   currency?: string;
+  sourceUrl?: string;
+  sourceProduct?: string;
+  sourceNotes?: string;
 }
 
 export interface AdminUser {

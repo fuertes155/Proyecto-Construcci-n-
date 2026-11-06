@@ -11,6 +11,8 @@ import Button, { IconButton } from '../../components/ui/Button';
 import { TextAreaField, TextField } from '../../components/ui/Field';
 import Modal from '../../components/ui/Modal';
 import { TableSkeleton } from '../../components/ui/Skeleton';
+import SearchInput from '../../components/ui/SearchInput';
+import { matchesSearch } from '../../utils/search';
 import { adminApi, type AdminMaterial, type CreateMaterialInput } from '../../services/admin';
 import { apiErrorMessage } from '../../services/api';
 
@@ -99,9 +101,16 @@ function MaterialForm({
 export default function AdminMaterials() {
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<AdminMaterial | null>(null);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: materials, isLoading, isError, refetch } = useQuery({
+  const {
+    data: materials,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['admin', 'materials'],
     queryFn: adminApi.materials.list,
   });
@@ -139,10 +148,22 @@ export default function AdminMaterials() {
     onError: (err) => toast.error(apiErrorMessage(err, 'No se pudo cambiar el estado')),
   });
 
+  const visible =
+    materials?.filter(
+      (material) =>
+        matchesSearch(`${material.name} ${material.category ?? ''} ${material.unit}`, search) &&
+        (!status || material.active === (status === 'active'))
+    ) ?? [];
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="title-section">Catálogo de materiales</h2>
+        <div>
+          <h2 className="title-section">Catálogo de materiales</h2>
+          <p className="mt-1 text-sm text-ink-muted">
+            Define nombres, unidades y disponibilidad en la app.
+          </p>
+        </div>
         <Button icon={<PiPlus aria-hidden="true" />} onClick={() => setShowCreate(true)}>
           Nuevo material
         </Button>
@@ -187,6 +208,28 @@ export default function AdminMaterials() {
 
       {materials && (
         <div className="card overflow-hidden">
+          <div className="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center sm:p-5">
+            <SearchInput
+              label="Buscar materiales en administración"
+              value={search}
+              onChange={setSearch}
+              placeholder="Nombre, categoría o unidad…"
+              className="flex-1"
+            />
+            <select
+              aria-label="Estado del material"
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+              className="input sm:w-44"
+            >
+              <option value="">Todos los estados</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
+            <p className="shrink-0 text-xs text-ink-subtle" role="status">
+              {visible.length} de {materials.length}
+            </p>
+          </div>
           <div className="overflow-x-auto">
             {/* En móvil solo quedan dos columnas: el resto se muestra bajo el nombre */}
             <table className="data-table md:min-w-[40rem]">
@@ -208,7 +251,7 @@ export default function AdminMaterials() {
                 </tr>
               </thead>
               <tbody>
-                {materials.map((m) => {
+                {visible.map((m) => {
                   const status = m.active ? (
                     <Badge tone="success" icon={<PiCheckCircleFill aria-hidden="true" />}>
                       Activo
@@ -237,7 +280,7 @@ export default function AdminMaterials() {
                       <td className="hidden text-ink-muted md:table-cell">{m.category ?? '—'}</td>
                       <td className="hidden md:table-cell">{status}</td>
                       <td className="w-px py-1 pl-0">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex flex-col items-end justify-end gap-1 sm:flex-row sm:items-center">
                           <Button
                             variant={m.active ? 'danger-ghost' : 'ghost'}
                             size="sm"
@@ -256,10 +299,12 @@ export default function AdminMaterials() {
                     </tr>
                   );
                 })}
-                {materials.length === 0 && (
+                {visible.length === 0 && (
                   <tr>
                     <td colSpan={5} className="py-10 text-center text-ink-muted">
-                      Aún no hay materiales en el catálogo.
+                      {materials.length === 0
+                        ? 'Aún no hay materiales en el catálogo.'
+                        : 'No hay materiales que coincidan con estos filtros.'}
                     </td>
                   </tr>
                 )}

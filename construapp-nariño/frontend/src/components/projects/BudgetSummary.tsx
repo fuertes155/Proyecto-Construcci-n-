@@ -45,24 +45,24 @@ export default function BudgetSummary({ summary, variant = 'compact' }: BudgetSu
   if (variant === 'detail') {
     return (
       <div>
-        <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-3">
-          <div>
+        <dl className="grid gap-3 sm:grid-cols-3">
+          <div className="min-w-0 rounded-lg border border-brand/15 bg-brand-soft p-4">
             <dt className="text-sm font-medium text-ink-muted">Costo estimado</dt>
-            <dd className="mt-1 text-[1.75rem] font-semibold leading-none text-ink">
+            <dd className="mt-2 break-words font-display text-[clamp(1.6rem,2.2vw,2.25rem)] font-semibold leading-tight tracking-tight text-brand-text">
               {formatCOP(summary.totalCost)}
             </dd>
           </div>
-          <div>
+          <div className="min-w-0 rounded-lg border border-line bg-surface-muted p-4">
             <dt className="text-sm font-medium text-ink-muted">Presupuesto objetivo</dt>
-            <dd className="mt-1 text-[1.75rem] font-semibold leading-none text-ink">
+            <dd className="mt-2 break-words font-display text-[clamp(1.6rem,2.2vw,2.25rem)] font-semibold leading-tight tracking-tight text-ink">
               {hasBudget ? formatCOP(summary.budget) : <span className="text-ink-subtle">—</span>}
             </dd>
           </div>
-          <div>
+          <div className="min-w-0 rounded-lg border border-line bg-surface-muted p-4">
             <dt className="text-sm font-medium text-ink-muted">
               {summary.overBudget ? 'Exceso' : 'Disponible'}
             </dt>
-            <dd className="mt-1 text-[1.75rem] font-semibold leading-none text-ink">
+            <dd className="mt-2 break-words font-display text-[clamp(1.6rem,2.2vw,2.25rem)] font-semibold leading-tight tracking-tight text-ink">
               {hasBudget ? (
                 formatCOP(Math.abs(remaining ?? 0))
               ) : (
@@ -97,7 +97,7 @@ export default function BudgetSummary({ summary, variant = 'compact' }: BudgetSu
 
   return (
     <div>
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <span className="text-sm text-ink-muted">Costo estimado</span>
         <span className="text-lg font-semibold text-ink">{formatCOP(summary.totalCost)}</span>
       </div>

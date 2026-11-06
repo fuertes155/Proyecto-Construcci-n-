@@ -2,12 +2,13 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { PiCheckCircleFill, PiMagnifyingGlass, PiProhibit } from 'react-icons/pi';
+import { PiCheckCircleFill, PiProhibit } from 'react-icons/pi';
 import Alert from '../../components/ui/Alert';
 import Badge, { type BadgeTone } from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { TableSkeleton } from '../../components/ui/Skeleton';
+import SearchInput from '../../components/ui/SearchInput';
 import { useAuth } from '../../hooks/useAuth';
 import { adminApi, type AdminUser } from '../../services/admin';
 import { apiErrorMessage } from '../../services/api';
@@ -70,21 +71,14 @@ export default function AdminUsers() {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <div className="relative w-full sm:w-80">
-          <PiMagnifyingGlass
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-subtle"
-          />
-          <input
-            type="search"
-            aria-label="Buscar usuarios"
-            className="input pl-10"
-            placeholder="Buscar por correo o nombre…"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </div>
+      <div className="filter-bar sm:flex-row sm:flex-wrap">
+        <SearchInput
+          label="Buscar usuarios"
+          value={q}
+          onChange={setQ}
+          placeholder="Buscar por correo o nombre…"
+          className="flex-1 sm:min-w-56"
+        />
         <select
           aria-label="Filtrar por estado"
           className="input w-full sm:w-auto"
@@ -152,7 +146,9 @@ export default function AdminUsers() {
                 {data.users.map((u) => {
                   const userType = USER_TYPE_LABEL[u.userType] ?? u.userType;
                   const roleBadge = (
-                    <Badge tone={ROLE_TONE[u.role] ?? 'neutral'}>{ROLE_LABEL[u.role] ?? u.role}</Badge>
+                    <Badge tone={ROLE_TONE[u.role] ?? 'neutral'}>
+                      {ROLE_LABEL[u.role] ?? u.role}
+                    </Badge>
                   );
                   const statusBadge =
                     u.status === 'active' ? (
@@ -226,14 +222,16 @@ export default function AdminUsers() {
           toSuspend && (
             <>
               <strong className="font-semibold text-ink">{fullName(toSuspend)}</strong> (
-              {toSuspend.email}) no podrá iniciar sesión y se cerrarán sus sesiones abiertas.
-              Puedes reactivar la cuenta cuando quieras.
+              {toSuspend.email}) no podrá iniciar sesión y se cerrarán sus sesiones abiertas. Puedes
+              reactivar la cuenta cuando quieras.
             </>
           )
         }
         confirmLabel="Suspender cuenta"
         loading={statusMutation.isPending}
-        onConfirm={() => toSuspend && statusMutation.mutate({ id: toSuspend.id, next: 'suspended' })}
+        onConfirm={() =>
+          toSuspend && statusMutation.mutate({ id: toSuspend.id, next: 'suspended' })
+        }
         onCancel={() => setToSuspend(null)}
       />
     </div>

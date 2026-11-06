@@ -1,13 +1,34 @@
 import clsx from 'clsx';
-import { PiPackage, PiStorefront, PiTag, PiUsers } from 'react-icons/pi';
+import { PiPackage, PiShieldCheck, PiStorefront, PiTag, PiUsers } from 'react-icons/pi';
 import { NavLink, Outlet } from 'react-router-dom';
 import PageHeader from '../../components/ui/PageHeader';
+import Badge from '../../components/ui/Badge';
 
 const tabs = [
-  { to: '/admin/materials', label: 'Materiales', icon: <PiPackage aria-hidden="true" /> },
-  { to: '/admin/prices', label: 'Precios', icon: <PiTag aria-hidden="true" /> },
-  { to: '/admin/providers', label: 'Proveedores', icon: <PiStorefront aria-hidden="true" /> },
-  { to: '/admin/users', label: 'Usuarios', icon: <PiUsers aria-hidden="true" /> },
+  {
+    to: '/admin/materials',
+    label: 'Materiales',
+    caption: 'Catálogo y unidades',
+    icon: <PiPackage aria-hidden="true" />,
+  },
+  {
+    to: '/admin/prices',
+    label: 'Precios',
+    caption: 'Valores y fuentes',
+    icon: <PiTag aria-hidden="true" />,
+  },
+  {
+    to: '/admin/providers',
+    label: 'Proveedores',
+    caption: 'Directorio comercial',
+    icon: <PiStorefront aria-hidden="true" />,
+  },
+  {
+    to: '/admin/users',
+    label: 'Usuarios',
+    caption: 'Cuentas y acceso',
+    icon: <PiUsers aria-hidden="true" />,
+  },
 ];
 
 export default function AdminLayout() {
@@ -17,35 +38,44 @@ export default function AdminLayout() {
         eyebrow="Gestión"
         title="Administración"
         description="Catálogo de materiales, precios por proveedor y moderación de usuarios."
+        actions={
+          <Badge tone="neutral" icon={<PiShieldCheck aria-hidden="true" />}>
+            Solo administración
+          </Badge>
+        }
       />
 
-      {/* En móvil las pestañas se desplazan en horizontal hasta el borde de la pantalla */}
-      <nav
-        aria-label="Secciones de administración"
-        className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0"
-      >
-        <ul className="flex min-w-max border-b border-line">
+      <nav aria-label="Secciones de administración">
+        <ul className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
           {tabs.map((tab) => (
             <li key={tab.to}>
               <NavLink
                 to={tab.to}
                 className={({ isActive }) =>
                   clsx(
-                    'relative flex items-center gap-2 px-4 py-3 text-sm font-semibold transition-colors [&>svg]:h-5 [&>svg]:w-5',
-                    isActive ? 'text-brand-text' : 'text-ink-muted hover:text-ink'
+                    'relative flex h-full items-center gap-3 rounded-xl border p-3 text-sm font-semibold transition-colors sm:p-4',
+                    isActive
+                      ? 'border-brand/30 bg-brand-soft text-brand-text'
+                      : 'border-line bg-surface text-ink-muted hover:border-line-strong hover:bg-surface-muted hover:text-ink'
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
-                    {tab.icon}
-                    {tab.label}
-                    {isActive && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-brand"
-                      />
-                    )}
+                    <span
+                      className={clsx(
+                        'hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg sm:flex [&>svg]:h-5 [&>svg]:w-5',
+                        isActive ? 'bg-surface/70' : 'bg-surface-muted'
+                      )}
+                    >
+                      {tab.icon}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block">{tab.label}</span>
+                      <span className="mt-0.5 block text-[0.6875rem] font-normal leading-relaxed text-ink-muted">
+                        {tab.caption}
+                      </span>
+                    </span>
                   </>
                 )}
               </NavLink>

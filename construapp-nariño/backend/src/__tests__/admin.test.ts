@@ -121,9 +121,11 @@ describe('precios por proveedor (HU-12.2)', () => {
     const first = await request(app)
       .put('/api/admin/prices')
       .set(hdr(adminToken))
-      .send({ materialId, providerId, price: 2500 });
+      .send({ materialId, providerId, price: 2500, sourceUrl: 'https://example.com/teja', sourceProduct: 'Teja por unidad', sourceNotes: 'IVA incluido' });
     expect(first.status).toBe(201);
     expect(Number(first.body.price)).toBe(2500);
+    expect(first.body.sourceUrl).toBe('https://example.com/teja');
+    expect(first.body.checkedAt).toEqual(expect.any(String));
 
     const second = await request(app)
       .put('/api/admin/prices')
@@ -131,6 +133,8 @@ describe('precios por proveedor (HU-12.2)', () => {
       .send({ materialId, providerId, price: 2800 });
     expect(second.status).toBe(200);
     expect(Number(second.body.price)).toBe(2800);
+    expect(second.body.sourceUrl).toBeNull();
+    expect(second.body.checkedAt).toBeNull();
   });
 
   it('rechaza un material inexistente con 400', async () => {

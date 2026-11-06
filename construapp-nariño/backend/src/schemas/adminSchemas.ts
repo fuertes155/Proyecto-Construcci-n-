@@ -45,6 +45,9 @@ export const upsertPriceSchema = Joi.object({
   providerId: Joi.string().uuid().required(),
   price: Joi.number().positive().max(1e12).required(),
   currency: Joi.string().uppercase().length(3).default('COP'),
+  sourceUrl: Joi.string().uri({ scheme: ['http', 'https'] }).max(4000).allow('', null).default(null),
+  sourceProduct: Joi.string().trim().max(255).allow('', null).default(null),
+  sourceNotes: Joi.string().trim().max(2000).allow('', null).default(null),
 });
 
 export const priceQuerySchema = Joi.object({

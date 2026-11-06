@@ -4,12 +4,14 @@
  * - Tipos de calculadora (hormigón, mampostería, mortero, bloque, acero,
  *   pintura, enchape, cimiento ciclópeo y cubierta) según `docs/API.md`.
  * - Materiales de construcción con su unidad.
- * - Proveedores locales (datos de demostración) y sus precios en COP
- *   (también de demostración: referencias aproximadas, no cotizaciones reales).
+ * - Proveedores reales y precios publicados en COP con fuente y fecha de consulta.
+ *   Ver publishedPrices.ts para las condiciones de cada oferta.
  *
  * Idempotente: usa `findOrCreate` / `upsert`, se puede ejecutar varias veces.
  */
 import logger from '../config/logger.js';
+import { sequelize } from '../config/database.js';
+import { checkedAt, publishedPrices, publishedProviders } from './publishedPrices.js';
 import {
   CalculatorType,
   Material,
@@ -140,7 +142,7 @@ const materials = [
   { key: 'bloque6', name: 'Bloque de concreto n.º 6', unit: 'unidad', category: 'mampostería' },
   { key: 'varilla38', name: 'Varilla corrugada 3/8" x 6 m', unit: 'unidad', category: 'acero' },
   { key: 'varilla58', name: 'Varilla corrugada 5/8" x 6 m', unit: 'unidad', category: 'acero' },
-  { key: 'malla', name: 'Malla electrosoldada 15 x 15 cm (2,35 x 6 m)', unit: 'unidad', category: 'acero' },
+  { key: 'malla', name: 'Malla electrosoldada 4 mm (2,35 x 6 m)', unit: 'unidad', category: 'acero' },
   { key: 'pintura2', name: 'Pintura vinilo tipo 2', unit: 'galón', category: 'acabados' },
   { key: 'pinturaExt', name: 'Pintura para exteriores', unit: 'galón', category: 'acabados' },
   { key: 'estuco', name: 'Estuco en polvo', unit: 'bulto 25 kg', category: 'acabados' },
@@ -156,110 +158,62 @@ const materials = [
   { key: 'formaleta', name: 'Tabla para formaleta 3 m', unit: 'unidad', category: 'madera' },
 ];
 
-// Proveedores de demostración (no representan empresas reales).
-const providers = [
-  {
-    key: 'constructor',
-    name: 'Depósito El Constructor (demo)',
-    location: 'Pasto, Nariño',
-    phone: '+57 310 000 0001',
-    email: 'ventas@elconstructor.demo',
-    rating: 4.6,
-    deliveryTime: '24 h',
-    prices: {
-      cemento: 35000, arena: 90000, grava: 96000, ladrillo: 1400,
-      bloque: 2800, mortero: 22000, varilla: 38000, pintura: 76000,
-      alambre: 9500, baldosa: 34900, pegante: 24000, boquilla: 6500, piedra: 78000,
-      arenaPena: 65000, cal: 15000, bloqueArcilla: 1150, bloque6: 3700, varilla38: 21500,
-      varilla58: 59000, malla: 152000, pintura2: 49000, pinturaExt: 99000, estuco: 29000,
-      porcelanato: 64900, pegantePorc: 44000, tejaFibro: 46000, tejaZinc: 39000, gancho: 1000,
-      impermeabilizante: 61000, pvcSanitario: 64000, pvcPresion: 10200, puntilla: 4500,
-      formaleta: 10000,
-    },
-  },
-  {
-    key: 'laroca',
-    name: 'Ferretería La Roca (demo)',
-    location: 'Pasto, Nariño',
-    phone: '+57 310 000 0002',
-    email: 'info@laroca.demo',
-    rating: 4.3,
-    deliveryTime: '48 h',
-    prices: {
-      cemento: 34200, arena: 88000, grava: 94000, ladrillo: 1350,
-      bloque: 2750, mortero: 23000, varilla: 37500, pintura: 79000,
-      alambre: 9200, baldosa: 33500, pegante: 23500, boquilla: 6900, piedra: 75000,
-      arenaPena: 62000, cal: 14500, bloqueArcilla: 1100, bloque6: 3600, varilla38: 21000,
-      varilla58: 58200, malla: 148000, pintura2: 51000, pinturaExt: 104000, estuco: 30500,
-      porcelanato: 62500, pegantePorc: 42500, tejaFibro: 44500, tejaZinc: 40500, gancho: 950,
-      impermeabilizante: 59500, pvcSanitario: 62000, pvcPresion: 9800, puntilla: 4300,
-      formaleta: 9500,
-    },
-  },
-  {
-    key: 'galeras',
-    name: 'Materiales Galeras (demo)',
-    location: 'Ipiales, Nariño',
-    phone: '+57 310 000 0003',
-    email: 'contacto@galeras.demo',
-    rating: 4.1,
-    deliveryTime: '72 h',
-    prices: {
-      cemento: 36000, arena: 85000, grava: 92000, ladrillo: 1450,
-      bloque: 2900, mortero: 21500, varilla: 39000, pintura: 74000,
-      alambre: 9800, baldosa: 36000, pegante: 25000, boquilla: 6200, piedra: 72000,
-      arenaPena: 60000, cal: 15800, bloqueArcilla: 1250, bloque6: 3850, varilla38: 22300,
-      varilla58: 60500, malla: 158000, pintura2: 47500, pinturaExt: 97000, estuco: 28500,
-      porcelanato: 67000, pegantePorc: 45500, tejaFibro: 47500, tejaZinc: 38000, gancho: 1100,
-      impermeabilizante: 63000, pvcSanitario: 66500, pvcPresion: 10900, puntilla: 4700,
-      formaleta: 10800,
-    },
-  },
+// Solo se retiran los registros exactos del catálogo ficticio anterior.
+const legacyProviders = [
+  { name: 'Depósito El Constructor (demo)', email: 'ventas@elconstructor.demo' },
+  { name: 'Ferretería La Roca (demo)', email: 'info@laroca.demo' },
+  { name: 'Materiales Galeras (demo)', email: 'contacto@galeras.demo' },
 ];
 
 export async function seed(): Promise<void> {
-  for (const ct of calculatorTypes) {
-    await CalculatorType.upsert(ct);
-  }
-  logger.info(`  Tipos de calculadora: ${calculatorTypes.length}`);
-
-  const materialIds: Record<string, string> = {};
-  for (const m of materials) {
-    const [row] = await Material.findOrCreate({
-      where: { name: m.name },
-      defaults: { name: m.name, unit: m.unit, category: m.category },
-    });
-    materialIds[m.key] = row.id;
-  }
-  logger.info(`  Materiales: ${materials.length}`);
-
-  let priceCount = 0;
-  for (const p of providers) {
-    const [provider] = await Provider.findOrCreate({
-      where: { name: p.name },
-      defaults: {
-        name: p.name,
-        location: p.location,
-        phone: p.phone,
-        email: p.email,
-        rating: p.rating,
-        deliveryTime: p.deliveryTime,
-      },
-    });
-
-    for (const [key, price] of Object.entries(p.prices)) {
-      const materialId = materialIds[key];
-      if (!materialId) continue;
-      const [row, created] = await MaterialPrice.findOrCreate({
-        where: { materialId, providerId: provider.id },
-        defaults: { materialId, providerId: provider.id, price, currency: 'COP' },
+  await sequelize.transaction(async (transaction) => {
+    for (const ct of calculatorTypes) await CalculatorType.upsert(ct, { transaction });
+    const materialIds: Record<string, string> = {};
+    // Mantiene el id del material anterior sin atribuir una cuadrícula no publicada.
+    const previousMesh = await Material.findOne({ where: { name: 'Malla electrosoldada 15 x 15 cm (2,35 x 6 m)' }, transaction });
+    const currentMesh = await Material.findOne({ where: { name: 'Malla electrosoldada 4 mm (2,35 x 6 m)' }, transaction });
+    if (previousMesh && !currentMesh) await previousMesh.update({ name: 'Malla electrosoldada 4 mm (2,35 x 6 m)' }, { transaction });
+    for (const m of materials) {
+      const [row] = await Material.findOrCreate({
+        where: { name: m.name },
+        defaults: { name: m.name, unit: m.unit, category: m.category },
+        transaction,
       });
-      if (!created) {
-        row.price = price;
-        await row.save();
-      }
-      priceCount += 1;
+      materialIds[m.key] = row.id;
     }
-  }
-  logger.info(`  Proveedores: ${providers.length} · Precios: ${priceCount}`);
+    for (const legacy of legacyProviders) {
+      const rows = await Provider.findAll({ where: legacy, transaction });
+      for (const row of rows) {
+        await MaterialPrice.destroy({ where: { providerId: row.id }, transaction });
+        await row.destroy({ transaction });
+      }
+    }
+    const providerIds: Record<string, string> = {};
+    for (const p of publishedProviders) {
+      const [row] = await Provider.findOrCreate({
+        where: { name: p.name },
+        defaults: { name: p.name, location: p.location, phone: p.phone, email: p.email },
+        transaction,
+      });
+      providerIds[p.key] = row.id;
+    }
+    for (const p of publishedPrices) {
+      const materialId = materialIds[p.materialKey];
+      const providerId = providerIds[p.providerKey];
+      if (!materialId || !providerId) throw new Error('Referencia de precio sin material o proveedor');
+      const values = {
+        materialId, providerId, price: p.price, currency: 'COP',
+        sourceUrl: p.sourceUrl, sourceProduct: p.sourceProduct,
+        sourceNotes: p.sourceNotes, checkedAt,
+      };
+      const [row, created] = await MaterialPrice.findOrCreate({
+        where: { materialId, providerId }, defaults: values, transaction,
+      });
+      // Repetir el seed no cambia la fecha de consulta ni pisa cotizaciones posteriores.
+      if (!created && row.checkedAt && row.checkedAt.getTime() < checkedAt.getTime()) {
+        await row.update(values, { transaction });
+      }
+    }
+  });
+  logger.info(`  Materiales: ${materials.length} · Proveedores reales: ${publishedProviders.length} · Precios publicados: ${publishedPrices.length}`);
 }

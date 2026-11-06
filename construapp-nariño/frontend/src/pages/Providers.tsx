@@ -14,11 +14,14 @@ import {
 } from 'react-icons/pi';
 import { Link, useSearchParams } from 'react-router-dom';
 import Alert from '../components/ui/Alert';
+import PriceSource from '../components/PriceSource';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
 import SegmentedControl from '../components/ui/SegmentedControl';
+import SearchInput from '../components/ui/SearchInput';
+import { SelectField } from '../components/ui/Field';
 import { TableSkeleton } from '../components/ui/Skeleton';
 import { catalogApi, type CatalogMaterial, type CatalogProvider } from '../services/catalog';
 import { formatCOP, formatDate } from '../utils/format';
@@ -26,7 +29,10 @@ import { formatCOP, formatDate } from '../utils/format';
 type View = 'materiales' | 'proveedores';
 
 const formatRating = (rating: number) =>
-  rating.toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  rating.toLocaleString('es-CO', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
 
 /** Primera letra en mayúscula para mostrar las categorías del catálogo. */
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -40,16 +46,22 @@ export default function Providers() {
       <PageHeader
         eyebrow="Directorio"
         title="Proveedores y precios"
-        description="Compara el precio de cada material entre los proveedores locales de Nariño y encuentra a quién comprarle."
+        description="Consulta precios publicados por comercios de Pasto y Colombia, con su fuente y fecha de consulta."
         actions={
           <SegmentedControl
             label="Ver"
             value={view}
             onChange={(next) =>
-              setParams(next === 'materiales' ? {} : { vista: next }, { replace: true })
+              setParams(next === 'materiales' ? {} : { vista: next }, {
+                replace: true,
+              })
             }
             options={[
-              { value: 'materiales', label: 'Materiales', icon: <PiPackage aria-hidden="true" /> },
+              {
+                value: 'materiales',
+                label: 'Materiales',
+                icon: <PiPackage aria-hidden="true" />,
+              },
               {
                 value: 'proveedores',
                 label: 'Proveedores',
@@ -87,7 +99,10 @@ function MaterialsView() {
   const { data, isLoading, isError, isPlaceholderData, refetch } = useQuery({
     queryKey: ['catalog', 'materials', debouncedQ, category],
     queryFn: () =>
-      catalogApi.materials({ q: debouncedQ || undefined, category: category || undefined }),
+      catalogApi.materials({
+        q: debouncedQ || undefined,
+        category: category || undefined,
+      }),
     placeholderData: keepPreviousData,
   });
 
@@ -96,20 +111,26 @@ function MaterialsView() {
     everything?.materials.filter((m) => !c || m.category === c).length ?? 0;
 
   return (
-    <div className="space-y-4">
-      <div className="relative max-w-md">
-        <PiMagnifyingGlass
-          aria-hidden="true"
-          className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-subtle"
-        />
-        <input
-          type="search"
-          aria-label="Buscar materiales"
-          className="input pl-10"
-          placeholder="Buscar: cemento, varilla, teja…"
+    <div className="space-y-5">
+      <div className="card flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <SearchInput
+          label="Buscar materiales"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={setQ}
+          placeholder="Buscar: cemento, varilla, teja…"
+          className="w-full sm:max-w-md"
         />
+        <div className="flex items-center justify-between gap-5 sm:justify-end">
+          <p className="text-sm text-ink-muted">
+            <strong className="font-semibold tabular-nums text-ink">{data?.total ?? '—'}</strong>{' '}
+            materiales
+            {category || debouncedQ ? ' encontrados' : ' en el catálogo'}
+          </p>
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-line bg-surface-muted px-2.5 py-1 text-xs font-semibold text-ink-muted">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden="true" />
+            Precios en COP
+          </span>
+        </div>
       </div>
 
       {/* En móvil, una sola fila que se desliza; en pantallas anchas, varias filas */}
@@ -127,14 +148,16 @@ function MaterialsView() {
               aria-pressed={active}
               onClick={() => setCategory(c)}
               className={clsx(
-                'inline-flex min-h-[2.25rem] shrink-0 items-center gap-2 rounded-full border px-3.5 text-sm font-semibold transition',
+                'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border px-3.5 text-sm font-semibold transition',
                 active
-                  ? 'border-ink bg-ink text-canvas'
+                  ? 'border-brand/25 bg-brand-soft text-brand-text'
                   : 'border-line-strong bg-surface text-ink-muted hover:border-line-control hover:text-ink'
               )}
             >
               {c ? capitalize(c) : 'Todas'}
-              <span className={clsx('tabular-nums', active ? 'text-canvas/70' : 'text-ink-subtle')}>
+              <span
+                className={clsx('tabular-nums', active ? 'text-brand-text' : 'text-ink-subtle')}
+              >
                 {countIn(c)}
               </span>
             </button>
@@ -199,7 +222,9 @@ function MaterialsView() {
       )}
 
       <p className="text-xs text-ink-subtle">
-        Precios de referencia por unidad de venta. Confírmalos con el proveedor antes de comprar.
+        Precios publicados por unidad. Revisa la ubicación y las condiciones de cada oferta;
+        confirma disponibilidad, impuestos y transporte con la tienda. La consulta no se actualiza
+        automáticamente.
       </p>
     </div>
   );
@@ -243,7 +268,9 @@ function MaterialRow({
                 )}
               />
             )}
-            <span className="sr-only">{open ? 'Ocultar precios' : 'Ver precios por proveedor'}</span>
+            <span className="sr-only">
+              {open ? 'Ocultar precios' : 'Ver precios por proveedor'}
+            </span>
           </button>
         </td>
         <td className="num">
@@ -269,14 +296,19 @@ function MaterialRow({
                   key={p.providerId}
                   className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2"
                 >
-                  <span className="min-w-0">
-                    <Link to={`/providers/${p.providerId}`} className="font-semibold hover:underline">
+                  <div className="min-w-0">
+                    <Link
+                      to={`/providers/${p.providerId}`}
+                      className="font-semibold hover:underline"
+                    >
                       {p.providerName}
                     </Link>
                     <span className="ml-2 text-xs text-ink-subtle">
-                      {p.location} · actualizado {formatDate(p.updatedAt)}
+                      {p.location}
+                      {!p.checkedAt && <> · registrado {formatDate(p.updatedAt)}</>}
                     </span>
-                  </span>
+                    <PriceSource price={p} />
+                  </div>
                   <span className="flex items-baseline gap-2 tabular-nums">
                     {i === 0 ? (
                       <Badge tone="success">Más económico</Badge>
@@ -327,51 +359,64 @@ function ProvidersView() {
     placeholderData: keepPreviousData,
   });
 
-  const categories = [
-    ...new Set((everything?.providers ?? []).flatMap((p) => p.categories)),
-  ].sort((a, b) => a.localeCompare(b, 'es'));
+  const categories = [...new Set((everything?.providers ?? []).flatMap((p) => p.categories))].sort(
+    (a, b) => a.localeCompare(b, 'es')
+  );
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3">
-        <select
-          aria-label="Filtrar por ubicación"
-          className="input w-full sm:w-auto"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-        >
-          <option value="">Todas las ubicaciones</option>
-          {everything?.locations.map((l) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
-          ))}
-        </select>
-        <select
-          aria-label="Filtrar por material que vende"
-          className="input w-full sm:w-auto"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option value="">Cualquier material</option>
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {capitalize(c)}
-            </option>
-          ))}
-        </select>
-        <select
-          aria-label="Calificación mínima"
-          className="input w-full sm:w-auto"
-          value={rating}
-          onChange={(e) => setRating(e.target.value)}
-        >
-          {RATING_FILTERS.map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
-            </option>
-          ))}
-        </select>
+      <div className="filter-bar">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-semibold">Encuentra tu proveedor</h2>
+          {data && (
+            <p className="text-xs text-ink-subtle" role="status">
+              {data.total} proveedores
+            </p>
+          )}
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <SelectField
+            id="provider-location"
+            label="Ubicación"
+            aria-label="Filtrar por ubicación"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          >
+            <option value="">Todas las ubicaciones</option>
+            {everything?.locations.map((l) => (
+              <option key={l} value={l}>
+                {l}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField
+            id="provider-category"
+            label="Tipo de material"
+            aria-label="Filtrar por material que vende"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">Cualquier material</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {capitalize(c)}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField
+            id="provider-rating"
+            label="Calificación"
+            aria-label="Calificación mínima"
+            value={rating}
+            onChange={(e) => setRating(e.target.value)}
+          >
+            {RATING_FILTERS.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
+            ))}
+          </SelectField>
+        </div>
       </div>
 
       {isLoading && <TableSkeleton label="Cargando proveedores…" />}
@@ -412,9 +457,9 @@ function ProvidersView() {
 function ProviderCard({ provider: p }: { provider: CatalogProvider }) {
   return (
     <article className="card flex min-w-0 flex-col gap-4 p-5">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold leading-snug text-ink">
+          <h2 className="font-display text-2xl font-semibold leading-tight text-ink">
             <Link to={`/providers/${p.id}`} className="hover:underline">
               {p.name}
             </Link>
@@ -428,9 +473,9 @@ function ProviderCard({ provider: p }: { provider: CatalogProvider }) {
           className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-strong px-2.5 py-1 text-sm font-semibold text-ink"
           title="Calificación de 0 a 5"
         >
-          <PiStarFill aria-hidden="true" className="h-4 w-4 text-accent" />
-          {formatRating(p.rating)}
-          <span className="sr-only">de 5</span>
+          {p.rating > 0 && <PiStarFill aria-hidden="true" className="h-4 w-4 text-accent" />}
+          {p.rating > 0 ? formatRating(p.rating) : 'Sin calificaciones'}
+          {p.rating > 0 && <span className="sr-only">de 5</span>}
         </span>
       </div>
 

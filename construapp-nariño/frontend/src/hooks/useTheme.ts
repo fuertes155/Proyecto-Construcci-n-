@@ -6,7 +6,7 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 const STORAGE_KEY = 'construapp.theme';
 
 /** Coincide con `--canvas` de cada tema (index.css): colorea la barra del navegador en móvil. */
-const THEME_COLOR = { light: '#f5f2ec', dark: '#12100e' } as const;
+const THEME_COLOR = { light: '#f8f6f2', dark: '#12100e' } as const;
 
 function readPreference(): ThemePreference {
   try {
@@ -19,7 +19,9 @@ function readPreference(): ThemePreference {
 }
 
 function systemPrefersDark(): boolean {
-  return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  return (
+    typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-color-scheme: dark)').matches
+  );
 }
 
 function applyTheme(preference: ThemePreference) {

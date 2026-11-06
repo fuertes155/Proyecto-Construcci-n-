@@ -42,7 +42,11 @@ export default {
         accent: token('accent'),
         ring: token('ring'),
         // Estados: `DEFAULT` para marcas (medidores, puntos), `soft` + `text` para etiquetas
-        info: { DEFAULT: token('info'), soft: token('info-soft'), text: token('info-text') },
+        info: {
+          DEFAULT: token('info'),
+          soft: token('info-soft'),
+          text: token('info-text'),
+        },
         success: {
           DEFAULT: token('success'),
           soft: token('success-soft'),
@@ -76,10 +80,10 @@ export default {
       borderRadius: {
         sm: '0.25rem',
         DEFAULT: '0.375rem',
-        md: '0.375rem',
-        lg: '0.625rem',
-        xl: '0.875rem',
-        '2xl': '1.25rem',
+        md: '0.625rem',
+        lg: '0.875rem',
+        xl: '1.125rem',
+        '2xl': '1.5rem',
       },
       boxShadow: {
         card: '0 1px 2px rgb(var(--shadow) / 0.06), 0 1px 1px rgb(var(--shadow) / 0.04)',

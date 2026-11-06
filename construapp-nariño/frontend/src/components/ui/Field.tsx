@@ -41,11 +41,11 @@ function FieldShell({
   children,
 }: FieldMeta & { srSuffix?: string; children: ReactNode }) {
   return (
-    <div className={wrapperClassName}>
+    <div className={clsx('min-w-0', wrapperClassName)}>
       <label htmlFor={id} className="label">
         {label}
         {srSuffix && <span className="sr-only"> ({srSuffix})</span>}
-        {optional && <span className="ml-1.5 font-normal text-ink-subtle">Opcional</span>}
+        {optional && <span className="ml-2 text-xs font-normal text-ink-subtle">Opcional</span>}
       </label>
       {children}
       {hint && !error && (
@@ -66,8 +66,7 @@ function FieldShell({
 /* ------------------------------------------------------------------ texto --- */
 
 export interface TextFieldProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'>,
-    FieldMeta {
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'>, FieldMeta {
   /** Icono decorativo al inicio. */
   icon?: ReactNode;
   /** Unidad o sufijo dentro del campo: m, cm, %, COP… */
@@ -77,7 +76,19 @@ export interface TextFieldProps
 }
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
-  { id, label, hint, error, optional, wrapperClassName, icon, suffix, trailing, className, ...rest },
+  {
+    id,
+    label,
+    hint,
+    error,
+    optional,
+    wrapperClassName,
+    icon,
+    suffix,
+    trailing,
+    className,
+    ...rest
+  },
   ref
 ) {
   return (
@@ -126,35 +137,35 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
 /* ------------------------------------------------------------- contraseña --- */
 
 /** Campo de contraseña con botón para mostrarla u ocultarla. */
-export const PasswordField = forwardRef<HTMLInputElement, Omit<TextFieldProps, 'type' | 'trailing'>>(
-  function PasswordField(props, ref) {
-    const [visible, setVisible] = useState(false);
-    return (
-      <TextField
-        ref={ref}
-        type={visible ? 'text' : 'password'}
-        trailing={
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-            aria-pressed={visible}
-            onClick={() => setVisible((v) => !v)}
-          >
-            {visible ? <PiEyeSlash aria-hidden="true" /> : <PiEye aria-hidden="true" />}
-          </button>
-        }
-        {...props}
-      />
-    );
-  }
-);
+export const PasswordField = forwardRef<
+  HTMLInputElement,
+  Omit<TextFieldProps, 'type' | 'trailing'>
+>(function PasswordField(props, ref) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <TextField
+      ref={ref}
+      type={visible ? 'text' : 'password'}
+      trailing={
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          aria-pressed={visible}
+          onClick={() => setVisible((v) => !v)}
+        >
+          {visible ? <PiEyeSlash aria-hidden="true" /> : <PiEye aria-hidden="true" />}
+        </button>
+      }
+      {...props}
+    />
+  );
+});
 
 /* ----------------------------------------------------------------- select --- */
 
 export interface SelectFieldProps
-  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'id'>,
-    FieldMeta {}
+  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'id'>, FieldMeta {}
 
 export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(function SelectField(
   { id, label, hint, error, optional, wrapperClassName, className, children, ...rest },
@@ -186,8 +197,7 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(funct
 /* --------------------------------------------------------------- textarea --- */
 
 export interface TextAreaFieldProps
-  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id'>,
-    FieldMeta {}
+  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id'>, FieldMeta {}
 
 export const TextAreaField = forwardRef<HTMLTextAreaElement, TextAreaFieldProps>(
   function TextAreaField(

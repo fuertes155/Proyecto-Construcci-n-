@@ -1,7 +1,9 @@
 import { PiPrinter, PiShoppingCart, PiStorefront } from 'react-icons/pi';
 import type { ProjectCalculation } from '../../services/projects';
+import type { PriceSourceInfo } from '../../services/priceSource';
 import { formatCOP, formatQty } from '../../utils/format';
 import Button from '../ui/Button';
+import PriceSource from '../PriceSource';
 
 interface PurchaseLine {
   name: string;
@@ -10,6 +12,7 @@ interface PurchaseLine {
   /** `null` si a alguno de los cálculos le faltó el precio de este material. */
   total: number | null;
   providers: string[];
+  sources: PriceSourceInfo[];
 }
 
 /** Suma por material (mismo nombre y unidad) lo que pide cada cálculo del proyecto. */
@@ -24,6 +27,7 @@ function purchaseLines(calculations: ProjectCalculation[]): PurchaseLine[] {
         quantity: 0,
         total: 0,
         providers: [],
+        sources: [],
       };
       line.quantity += m.quantity;
       line.total = line.total === null || m.totalPrice === null ? null : line.total + m.totalPrice;
@@ -31,6 +35,19 @@ function purchaseLines(calculations: ProjectCalculation[]): PurchaseLine[] {
         line.providers.push(m.provider.name);
       }
       lines.set(key, line);
+      if (
+        m.sourceUrl &&
+        !line.sources.some(
+          (source) => source.sourceUrl === m.sourceUrl && source.checkedAt === m.checkedAt
+        )
+      ) {
+        line.sources.push({
+          sourceUrl: m.sourceUrl,
+          sourceProduct: m.sourceProduct,
+          sourceNotes: m.sourceNotes,
+          checkedAt: m.checkedAt,
+        });
+      }
     }
   }
   // En orden alfabético, como una lista para llevar al depósito.
@@ -77,7 +94,36 @@ export default function PurchaseList({ calculations }: { calculations: ProjectCa
         </Button>
       </div>
 
-      <div className="overflow-x-auto border-t border-line">
+      <ul
+        className="divide-y divide-line border-t border-line sm:hidden print:hidden"
+        aria-label="Materiales de la lista de compra"
+      >
+        {lines.map((line) => (
+          <li key={`${line.name}|${line.unit}`} className="p-5">
+            <p className="font-semibold text-ink">{line.name}</p>
+            <p className="mt-1 text-xs text-ink-subtle">
+              {line.providers.length > 0 ? line.providers.join(' · ') : 'Sin precio registrado'}
+            </p>
+            <dl className="mt-3 grid grid-cols-2 gap-4 rounded-md border border-line bg-surface-muted p-3 text-sm">
+              <div className="min-w-0">
+                <dt className="text-xs text-ink-subtle">Cantidad</dt>
+                <dd className="mt-1 tabular-nums">
+                  <strong className="font-semibold">{formatQty(line.quantity)}</strong> {line.unit}
+                </dd>
+              </div>
+              <div className="min-w-0 text-right">
+                <dt className="text-xs text-ink-subtle">Subtotal</dt>
+                <dd className="mt-1 font-semibold tabular-nums">{formatCOP(line.total)}</dd>
+              </div>
+            </dl>
+            {line.sources.map((source, index) => (
+              <PriceSource key={`${source.sourceUrl}-${index}`} price={source} />
+            ))}
+          </li>
+        ))}
+      </ul>
+
+      <div className="hidden overflow-x-auto border-t border-line sm:block print:block">
         <table className="data-table">
           <thead>
             <tr>
@@ -97,8 +143,13 @@ export default function PurchaseList({ calculations }: { calculations: ProjectCa
                   <p className="font-semibold">{line.name}</p>
                   <p className="mt-0.5 flex items-start gap-1 text-xs text-ink-subtle">
                     <PiStorefront aria-hidden="true" className="mt-px h-3.5 w-3.5 shrink-0" />
-                    {line.providers.length > 0 ? line.providers.join(' · ') : 'Sin precio registrado'}
+                    {line.providers.length > 0
+                      ? line.providers.join(' · ')
+                      : 'Sin precio registrado'}
                   </p>
+                  {line.sources.map((source, index) => (
+                    <PriceSource key={`${source.sourceUrl}-${index}`} price={source} />
+                  ))}
                 </td>
                 <td className="num">
                   <span className="font-semibold">{formatQty(line.quantity)}</span>{' '}
@@ -119,7 +170,7 @@ export default function PurchaseList({ calculations }: { calculations: ProjectCa
           </p>
         </div>
         <p className="max-w-sm text-xs text-ink-subtle sm:text-right">
-          Con los precios vigentes al guardar cada cálculo
+          Con los precios registrados en cada cálculo
           {incomplete ? '; los materiales sin precio no suman al total' : ''}. Cantidades
           aproximadas: valídalas con un profesional antes de comprar.
         </p>

@@ -199,6 +199,10 @@ export class MaterialPrice extends Model<
   declare providerId: ForeignKey<Provider['id']>;
   declare price: number;
   declare currency: CreationOptional<string>;
+  declare sourceUrl: CreationOptional<string | null>;
+  declare sourceProduct: CreationOptional<string | null>;
+  declare sourceNotes: CreationOptional<string | null>;
+  declare checkedAt: CreationOptional<Date | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -216,6 +220,10 @@ MaterialPrice.init(
     providerId: { type: DataTypes.UUID, allowNull: false },
     price: { type: DataTypes.DECIMAL(14, 2), allowNull: false },
     currency: { type: DataTypes.STRING(3), allowNull: false, defaultValue: 'COP' },
+    sourceUrl: { type: DataTypes.TEXT, allowNull: true },
+    sourceProduct: { type: DataTypes.STRING, allowNull: true },
+    sourceNotes: { type: DataTypes.TEXT, allowNull: true },
+    checkedAt: { type: DataTypes.DATE, allowNull: true },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
   },

@@ -7,7 +7,7 @@
    Los colores son tokens semánticos (canales RGB) que Tailwind consume en
    `tailwind.config.js`: usa `bg-surface`, `text-ink-muted`, `border-line`…
    en vez de la paleta cruda de Tailwind para que el tema oscuro funcione solo.
-   Todos los pares texto/fondo cumplen contraste WCAG AA (4.5:1).
+   Comprueba el contraste de cada combinación al añadir nuevos componentes.
    ========================================================================== */
 
 /* Los tokens van fuera de las capas de Tailwind para que nunca se purguen. */
@@ -15,7 +15,7 @@
   color-scheme: light;
 
   /* Planos: papel de obra y concreto claro */
-  --canvas: 245 242 236;
+  --canvas: 248 246 242;
   --surface: 255 255 255;
   --surface-muted: 247 244 239;
   --surface-strong: 235 230 221;
@@ -115,10 +115,12 @@
   html {
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
+    scroll-padding-top: 6rem;
   }
 
   body {
     @apply bg-canvas font-sans text-ink antialiased;
+    line-height: 1.6;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
   }
@@ -174,7 +176,8 @@
   }
 
   .title-page {
-    @apply font-display text-[2rem] font-semibold leading-[1.05] text-ink sm:text-[2.5rem];
+    @apply font-display text-[2.25rem] font-semibold leading-[1.1] tracking-tight text-ink sm:text-[3rem];
+    text-wrap: balance;
   }
 
   .title-section {
@@ -187,11 +190,148 @@
 
   /* --------------------------------------------------------------- tarjetas */
   .card {
-    @apply rounded-lg border border-line bg-surface shadow-card;
+    @apply rounded-xl border border-line bg-surface shadow-card;
   }
 
   .card-interactive {
     @apply transition duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-raised;
+  }
+
+  .workspace-shell {
+    background-image: radial-gradient(
+      ellipse at 100% 0%,
+      rgb(var(--brand) / 0.035),
+      transparent 42rem
+    );
+  }
+
+  .detail-header {
+    @apply relative flex min-w-0 flex-col gap-5 overflow-hidden rounded-xl border border-line bg-surface p-5 shadow-card sm:p-7;
+  }
+  .detail-header::before {
+    content: '';
+    @apply absolute inset-y-5 left-0 w-[3px] rounded-r-full bg-brand;
+  }
+
+  .filter-bar {
+    @apply flex min-w-0 flex-col gap-4 rounded-xl border border-line bg-surface p-4 sm:p-5;
+  }
+
+  .section-bar {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4 sm:px-6;
+  }
+
+  .form-section {
+    @apply min-w-0 space-y-5;
+  }
+  .form-section + .form-section {
+    @apply mt-6 border-t border-line pt-6;
+  }
+  .form-section-heading {
+    @apply flex items-center gap-3;
+  }
+  .form-step {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-muted font-display text-lg font-semibold text-brand-text;
+  }
+
+  .auth-card {
+    @apply w-full max-w-[29rem] rounded-2xl border border-line bg-surface p-5 shadow-raised sm:p-8;
+  }
+
+  /* Portada y herramientas: conserva papel cálido, naranja ladrillo y croquis. */
+  .site-container {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
+  }
+  .section-space {
+    @apply py-14 sm:py-20;
+  }
+  .public-header {
+    @apply sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur-md;
+  }
+  .section-kicker {
+    @apply flex items-center gap-2 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-brand-text;
+  }
+  .hero-heading {
+    @apply max-w-[13ch] font-display font-semibold text-ink;
+    font-size: clamp(3.5rem, 6.2vw, 5.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  .hero-highlight {
+    @apply relative inline-block text-brand-text;
+  }
+  .hero-highlight::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 h-[3px] w-full rounded-full bg-brand/25;
+  }
+  .section-heading {
+    @apply font-display text-4xl font-semibold leading-[1.06] tracking-tight sm:text-5xl;
+    text-wrap: balance;
+  }
+  .construction-preview {
+    @apply relative min-w-0 overflow-hidden rounded-2xl border border-shell-line bg-shell shadow-overlay;
+  }
+  .construction-preview::after {
+    content: '';
+    @apply pointer-events-none absolute inset-x-7 top-0 h-[2px] bg-accent/75;
+  }
+  .catalog-snapshot {
+    @apply grid grid-cols-3 divide-x divide-line py-5 sm:py-7 lg:grid-cols-[1fr_1fr_1fr_1.25fr];
+  }
+  .catalog-snapshot > div {
+    @apply flex min-w-0 flex-col gap-1 px-3 first:pl-0 sm:flex-row sm:items-center sm:gap-4 sm:px-6;
+  }
+  .catalog-snapshot strong {
+    @apply font-display text-3xl font-semibold leading-none tracking-tight text-ink sm:text-4xl;
+  }
+  .catalog-snapshot span {
+    @apply text-[0.6875rem] leading-relaxed text-ink-muted sm:text-xs;
+  }
+  .catalog-snapshot > a {
+    @apply hidden items-center justify-between gap-3 pl-7 text-brand-text lg:flex;
+  }
+  .catalog-snapshot b {
+    @apply font-medium text-ink-subtle;
+  }
+  .feature-icon {
+    @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-surface text-brand-text;
+  }
+  .feature-icon svg {
+    @apply h-6 w-6;
+  }
+  .calculator-card {
+    @apply flex min-w-0 items-start gap-3 rounded-lg border border-line bg-surface p-5 text-ink shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-raised;
+  }
+  .calculator-card-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-line bg-surface-muted text-brand-text transition-colors group-hover:border-brand/20 group-hover:bg-brand-soft;
+  }
+  .calculator-card-icon svg {
+    @apply h-5 w-5;
+  }
+  .calculator-catalog-compact .calculator-card {
+    @apply p-4;
+  }
+  .step-number {
+    @apply flex h-12 w-12 items-center justify-center rounded-full border border-line-strong bg-surface font-display text-2xl font-semibold text-brand-text;
+  }
+  .step-number::before {
+    content: '';
+    @apply absolute -top-px left-0 h-[2px] w-12 bg-brand;
+  }
+  .calculator-switch {
+    @apply flex h-full min-h-[5.125rem] flex-col items-center justify-center gap-2 rounded-md border border-transparent px-1.5 py-2.5 text-center text-xs font-semibold leading-tight text-ink-muted transition-colors hover:bg-surface-strong hover:text-ink;
+  }
+  .calculator-switch[aria-current='page'] {
+    @apply border-brand/30 bg-brand-soft text-brand-text;
+    box-shadow: inset 0 -2px 0 rgb(var(--brand));
+  }
+  .workspace-banner {
+    @apply relative overflow-hidden rounded-xl border border-shell-line bg-shell p-6 text-shell-fg sm:p-7;
+  }
+  .workspace-banner::before {
+    content: '';
+    @apply absolute inset-y-0 left-0 w-1 bg-accent;
   }
 
   /* ---------------------------------------------------------------- botones */
@@ -205,13 +345,16 @@
     @apply h-[1.2em] w-[1.2em] shrink-0;
   }
   .btn-sm {
-    @apply min-h-[2.25rem] px-3 text-sm;
+    @apply min-h-[2.75rem] px-3 text-sm;
   }
   .btn-lg {
     @apply min-h-[3.25rem] px-6 text-base;
   }
   .btn-primary {
-    @apply bg-brand text-brand-fg shadow-card hover:bg-brand-hover active:translate-y-px;
+    @apply bg-brand text-brand-fg hover:bg-brand-hover active:translate-y-px;
+    box-shadow:
+      0 2px 3px rgb(var(--brand) / 0.12),
+      inset 0 1px 0 rgb(255 255 255 / 0.12);
   }
   .btn-secondary {
     @apply border-line-strong bg-surface text-ink hover:border-line-control hover:bg-surface-muted active:translate-y-px;
@@ -231,7 +374,7 @@
   }
 
   .icon-btn {
-    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-ink-muted transition hover:bg-surface-strong hover:text-ink;
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-ink-muted transition hover:bg-surface-strong hover:text-ink;
   }
   .icon-btn:disabled {
     @apply pointer-events-none opacity-50;
@@ -249,7 +392,8 @@
   }
 
   .input {
-    @apply block min-h-[2.75rem] w-full rounded-md border border-line-control bg-surface px-3 py-2 text-base text-ink transition placeholder:text-ink-subtle;
+    @apply block min-h-12 w-full min-w-0 rounded-md border border-line-control bg-surface px-3.5 py-2.5 text-base text-ink transition placeholder:text-ink-subtle;
+    @apply hover:border-ink-subtle;
     @apply focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15;
     @apply disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-ink-subtle;
   }
@@ -264,7 +408,7 @@
   }
 
   .field-hint {
-    @apply mt-1.5 text-sm text-ink-subtle;
+    @apply mt-2 text-xs leading-relaxed text-ink-subtle;
   }
   .field-error {
     @apply mt-1.5 flex items-start gap-1.5 text-sm font-medium text-danger-text;
@@ -282,10 +426,10 @@
   /* `:where()` deja la especificidad en una sola clase: las utilidades de Tailwind
      puestas en una celda (`text-ink-muted`, `py-1`…) pueden sobrescribir estos valores. */
   .data-table :where(thead th) {
-    @apply whitespace-nowrap border-b border-line bg-surface-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] text-ink-muted;
+    @apply whitespace-nowrap border-b border-line bg-surface-muted px-3 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-ink-muted sm:px-4;
   }
   .data-table :where(tbody td) {
-    @apply border-b border-line px-4 py-3 align-middle text-ink;
+    @apply border-b border-line px-3 py-3.5 align-middle text-ink sm:px-4;
   }
   .data-table :where(tbody tr:last-child td) {
     @apply border-b-0;
