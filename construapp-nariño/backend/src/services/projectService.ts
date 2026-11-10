@@ -1,4 +1,5 @@
 import { Project, ProjectCalculation } from '../models/index.js';
+import { sequelize } from '../config/database.js';
 import { ApiError } from '../utils/ApiError.js';
 import { round } from '../utils/dosifications.js';
 import { calculatorService, type CalculatorId } from './calculatorService.js';
@@ -16,6 +17,10 @@ interface CreateInput {
   /** Fechas de calendario `YYYY-MM-DD` (ver `calendarDate` en projectSchemas). */
   startDate?: string | null;
   endDate?: string | null;
+  initialCalculation?: {
+    calculatorType: CalculatorId;
+    inputs: Record<string, unknown>;
+  };
 }
 
 /** Presupuesto acumulado del proyecto frente al objetivo (HU-03.5). */
@@ -28,7 +33,10 @@ export interface BudgetSummary {
   overBudget: boolean;
 }
 
-function summaryFor(project: Project, calcs: Pick<ProjectCalculation, 'totalCost'>[]): BudgetSummary {
+function summaryFor(
+  project: Project,
+  calcs: Pick<ProjectCalculation, 'totalCost'>[]
+): BudgetSummary {
   const totalCost = round(calcs.reduce((s, c) => s + Number(c.totalCost), 0));
   const budget = project.budget == null ? null : Number(project.budget);
   return {
@@ -53,16 +61,39 @@ async function loadOwned(user: AuthUser, projectId: string): Promise<Project> {
 
 export const projectService = {
   async create(userId: string, data: CreateInput) {
-    const project = await Project.create({
-      userId,
-      name: data.name,
-      description: data.description ?? null,
-      location: data.location ?? null,
-      budget: data.budget ?? null,
-      startDate: data.startDate ?? null,
-      endDate: data.endDate ?? null,
+    const initial = data.initialCalculation;
+    const result = initial
+      ? await calculatorService.run(initial.calculatorType, initial.inputs)
+      : null;
+    return sequelize.transaction(async (transaction) => {
+      const project = await Project.create(
+        {
+          userId,
+          name: data.name,
+          description: data.description ?? null,
+          location: data.location ?? null,
+          budget: data.budget ?? null,
+          startDate: data.startDate ?? null,
+          endDate: data.endDate ?? null,
+        },
+        { transaction }
+      );
+      if (initial && result) {
+        await ProjectCalculation.create(
+          {
+            projectId: project.id,
+            calculatorType: result.calculatorType,
+            inputs: initial.inputs,
+            result: result as unknown as Record<string, unknown>,
+            quantity: result.quantity,
+            unit: result.unit,
+            totalCost: result.totalCost,
+          },
+          { transaction }
+        );
+      }
+      return project.toJSON();
     });
-    return project.toJSON();
   },
 
   async listForUser(user: AuthUser) {
@@ -70,7 +101,13 @@ export const projectService = {
     const projects = await Project.findAll({
       where,
       order: [['createdAt', 'DESC']],
-      include: [{ model: ProjectCalculation, as: 'calculations', attributes: ['totalCost'] }],
+      include: [
+        {
+          model: ProjectCalculation,
+          as: 'calculations',
+          attributes: ['totalCost'],
+        },
+      ],
     });
 
     const list = projects.map((p) => {
@@ -128,12 +165,17 @@ export const projectService = {
       totalCost: result.totalCost,
     });
 
-    return { calculation: row.toJSON(), summary: await this.summary(projectId) };
+    return {
+      calculation: row.toJSON(),
+      summary: await this.summary(projectId),
+    };
   },
 
   async removeCalculation(user: AuthUser, projectId: string, calculationId: string) {
     await loadOwned(user, projectId);
-    const row = await ProjectCalculation.findOne({ where: { id: calculationId, projectId } });
+    const row = await ProjectCalculation.findOne({
+      where: { id: calculationId, projectId },
+    });
     if (!row) throw ApiError.notFound('Cálculo no encontrado en este proyecto');
     await row.destroy();
     return { summary: await this.summary(projectId) };

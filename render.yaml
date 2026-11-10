@@ -1,0 +1,41 @@
+# Demostración académica: un servidor para React + API y PostgreSQL persistente.
+services:
+  - type: web
+    name: construapp-narino
+    runtime: node
+    region: oregon
+    plan: free
+    # Render no admite ñ en rootDir; los comandos entran al monorepo directamente.
+    buildCommand: cd construapp-nariño && npm ci --include=dev --workspace=construapp-backend --workspace=construapp-frontend --include-workspace-root && npm run build:deploy
+    startCommand: cd construapp-nariño && npm run start:production
+    healthCheckPath: /api/ready
+    autoDeployTrigger: 'off'
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: construapp-narino-db
+          property: connectionString
+      - key: DB_DIALECT
+        value: postgres
+      - key: REDIS_ENABLED
+        value: 'false'
+      - key: TRUST_PROXY
+        value: '1'
+      - key: DEMO_MODE
+        value: 'true'
+      - key: LOG_LEVEL
+        value: info
+databases:
+  - name: construapp-narino-db
+    region: oregon
+    plan: free
+    databaseName: construapp_narino
+    user: construapp_user
+    postgresMajorVersion: '15'
+    ipAllowList: []

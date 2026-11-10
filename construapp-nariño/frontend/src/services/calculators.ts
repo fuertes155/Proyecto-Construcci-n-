@@ -1,15 +1,7 @@
 import { api } from './api';
 
 export type CalculatorId =
-  | 'concrete'
-  | 'brick'
-  | 'mortar'
-  | 'block'
-  | 'rebar'
-  | 'paint'
-  | 'tile'
-  | 'footing'
-  | 'roof';
+  'concrete' | 'brick' | 'mortar' | 'block' | 'rebar' | 'paint' | 'tile' | 'footing' | 'roof';
 
 export interface CalculatorField {
   name: string;
@@ -42,6 +34,7 @@ export interface PricedMaterial {
 }
 
 export interface CalculationResult {
+  explanation?: { formula: string; steps: string[]; assumptions: string[] };
   calculatorType: CalculatorId;
   quantity: number;
   unit: string;

@@ -54,6 +54,10 @@ export interface CreateProjectInput {
   budget?: number;
   startDate?: string;
   endDate?: string;
+  initialCalculation?: {
+    calculatorType: CalculatorId;
+    inputs: Record<string, number | string>;
+  };
 }
 
 export const projectsApi = {
@@ -69,7 +73,10 @@ export const projectsApi = {
     const { data } = await api.post('/projects', input);
     return data;
   },
-  async update(id: string, changes: Partial<CreateProjectInput & { status: ProjectStatus }>): Promise<Project> {
+  async update(
+    id: string,
+    changes: Partial<CreateProjectInput & { status: ProjectStatus }>
+  ): Promise<Project> {
     const { data } = await api.patch(`/projects/${id}`, changes);
     return data;
   },

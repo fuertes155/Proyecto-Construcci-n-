@@ -4,7 +4,7 @@
  * - Administrador: solo si `ADMIN_EMAIL` y `ADMIN_PASSWORD` están en `.env`
  *   (crea la cuenta o promueve la existente a `admin`).
  * - Usuario demo: `demo@construapp.co` / `demo-12345678` (rol `user`).
- *   Se omite si `NODE_ENV=production`.
+ *   En producción requiere `DEMO_MODE=true` explícitamente.
  *
  * Idempotente.
  */
@@ -39,8 +39,8 @@ async function ensureAdmin(): Promise<void> {
   logger.info(`  Admin creado: ${email}`);
 }
 
-async function ensureDemoUser(): Promise<void> {
-  if (process.env.NODE_ENV === 'production') return;
+export async function ensureDemoUser(): Promise<void> {
+  if (process.env.NODE_ENV === 'production' && process.env.DEMO_MODE !== 'true') return;
   const email = 'demo@construapp.co';
   const [, created] = await User.findOrCreate({
     where: { email },
@@ -53,7 +53,7 @@ async function ensureDemoUser(): Promise<void> {
       role: 'user',
     },
   });
-  logger.info(`  Usuario demo ${created ? 'creado' : 'ya existe'}: ${email} / demo-12345678`);
+  logger.info(`  Usuario demo ${created ? 'creado' : 'ya existe'}: ${email}`);
 }
 
 export async function seed(): Promise<void> {

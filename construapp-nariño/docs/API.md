@@ -641,3 +641,24 @@ Genera un reporte completo del proyecto.
 
 **Última actualización:** Septiembre 2026
 **Versión API:** 1.0.0
+
+## Actualización de entrega — 10 de noviembre de 2026
+
+`POST /api/projects` admite opcionalmente `initialCalculation` para crear una obra con su primer cálculo:
+
+```json
+{
+  "name": "Pintura de habitación",
+  "budget": 1000000,
+  "initialCalculation": {
+    "calculatorType": "paint",
+    "inputs": { "area": 40, "coats": 2, "paintType": "vinilo1", "wastePct": 5 }
+  }
+}
+```
+
+Devuelve el proyecto con HTTP 201, como antes. El detalle posterior contiene el cálculo y el resumen. Medidas inválidas producen 400 sin crear la obra. Si falla la escritura del cálculo, la transacción revierte la creación del proyecto. El cliente no proporciona precios ni totales confiables: se recalculan en el servidor.
+
+Las nueve rutas `POST /api/calculators/:tipo` incluyen `explanation` con `formula`, `steps[]` y `assumptions[]`. Los cálculos nuevos guardan esa explicación en su resultado histórico. Los registros antiguos pueden no tenerla.
+
+Si Sequelize informa un error de conexión a la base, la API responde 503 con un mensaje de disponibilidad, en lugar de mostrar un error interno genérico.

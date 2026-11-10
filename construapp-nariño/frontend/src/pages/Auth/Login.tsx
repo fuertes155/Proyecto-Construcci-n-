@@ -9,6 +9,7 @@ import Button from '../../components/ui/Button';
 import { PasswordField, TextField } from '../../components/ui/Field';
 import { useAuth } from '../../hooks/useAuth';
 import { apiErrorMessage } from '../../services/api';
+import { authReturn } from '../../utils/authReturn';
 
 const schema = z.object({
   email: z.string().email('Correo no válido'),
@@ -20,7 +21,7 @@ export default function Login() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/dashboard';
+  const from = authReturn(location.state);
 
   const {
     register,
@@ -47,7 +48,7 @@ export default function Login() {
       footer={
         <>
           ¿No tienes cuenta?{' '}
-          <Link to="/register" className="link">
+          <Link to="/register" state={location.state} className="link">
             Crear cuenta
           </Link>
         </>

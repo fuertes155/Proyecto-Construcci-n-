@@ -1,5 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
-import { ValidationError as SequelizeValidationError } from 'sequelize';
+import { ConnectionError, ValidationError as SequelizeValidationError } from 'sequelize';
 import logger from '../config/logger.js';
 import { ApiError } from '../utils/ApiError.js';
 
@@ -19,6 +19,13 @@ export const notFoundHandler: RequestHandler = (req, res) => {
  *   { error: string, status: number, details?: unknown }
  */
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  if (err instanceof ConnectionError) {
+    logger.error(`${req.method} ${req.originalUrl} → base de datos no disponible`);
+    return res.status(503).json({
+      error: 'El servicio de datos no está disponible. Intenta de nuevo en unos momentos.',
+      status: 503,
+    });
+  }
   // 1. Errores de dominio (ApiError)
   if (err instanceof ApiError) {
     if (err.status >= 500) {
@@ -40,9 +47,10 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
 
   // 3. JSON malformado en el cuerpo (lo lanza express.json())
   if (err instanceof SyntaxError && 'body' in err) {
-    return res
-      .status(400)
-      .json({ error: 'JSON inválido en el cuerpo de la petición', status: 400 });
+    return res.status(400).json({
+      error: 'JSON inválido en el cuerpo de la petición',
+      status: 400,
+    });
   }
 
   // 4. Cualquier otra cosa: 500 uniforme, siempre registrado

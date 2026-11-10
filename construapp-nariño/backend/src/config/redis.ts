@@ -39,6 +39,7 @@ redisClient.on('ready', () => {
  * Devuelve `true` solo si la conexión quedó lista.
  */
 export async function connectRedis(): Promise<boolean> {
+  if (process.env.REDIS_ENABLED === 'false') return false;
   try {
     await redisClient.connect();
   } catch {

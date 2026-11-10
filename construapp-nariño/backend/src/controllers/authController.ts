@@ -38,7 +38,10 @@ export const authController = {
   },
 
   async forgotPassword(req: Request, res: Response) {
-    const base = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
+    const base =
+      process.env.FRONTEND_URL ||
+      process.env.RENDER_EXTERNAL_URL ||
+      `${req.protocol}://${req.get('host')}`;
     await authService.requestPasswordReset(
       req.body.email,
       (token) => `${base.replace(/\/$/, '')}/reset-password?token=${token}`

@@ -16,7 +16,7 @@ interface PurchaseLine {
 }
 
 /** Suma por material (mismo nombre y unidad) lo que pide cada cálculo del proyecto. */
-function purchaseLines(calculations: ProjectCalculation[]): PurchaseLine[] {
+export function purchaseLines(calculations: ProjectCalculation[]): PurchaseLine[] {
   const lines = new Map<string, PurchaseLine>();
   for (const calculation of calculations) {
     for (const m of calculation.result?.materials ?? []) {
@@ -36,9 +36,13 @@ function purchaseLines(calculations: ProjectCalculation[]): PurchaseLine[] {
       }
       lines.set(key, line);
       if (
-        m.sourceUrl &&
+        (m.sourceUrl || m.sourceProduct || m.sourceNotes) &&
         !line.sources.some(
-          (source) => source.sourceUrl === m.sourceUrl && source.checkedAt === m.checkedAt
+          (source) =>
+            source.sourceUrl === m.sourceUrl &&
+            source.checkedAt === m.checkedAt &&
+            source.sourceNotes === m.sourceNotes &&
+            source.sourceProduct === m.sourceProduct
         )
       ) {
         line.sources.push({
@@ -61,7 +65,7 @@ function purchaseLines(calculations: ProjectCalculation[]): PurchaseLine[] {
 export default function PurchaseList({ calculations }: { calculations: ProjectCalculation[] }) {
   const lines = purchaseLines(calculations);
   if (lines.length === 0) return null;
-  const total = lines.reduce((sum, line) => sum + (line.total ?? 0), 0);
+  const total = calculations.reduce((sum, calculation) => sum + Number(calculation.totalCost), 0);
   const incomplete = lines.some((line) => line.total === null);
 
   return (
@@ -90,7 +94,7 @@ export default function PurchaseList({ calculations }: { calculations: ProjectCa
           onClick={() => window.print()}
           className="print:hidden"
         >
-          Imprimir
+          Imprimir / Guardar PDF
         </Button>
       </div>
 

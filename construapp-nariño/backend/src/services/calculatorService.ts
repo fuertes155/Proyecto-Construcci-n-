@@ -1,4 +1,8 @@
 import { CalculatorType } from '../models/index.js';
+import {
+  explainCalculation,
+  type CalculationExplanation,
+} from '../utils/calculationExplanation.js';
 import { calculatorSchemas, type CalculatorId } from '../schemas/calculatorSchemas.js';
 import { ApiError } from '../utils/ApiError.js';
 import {
@@ -85,6 +89,7 @@ export interface FootingInput {
 }
 
 export interface CalculationResult extends PricedResult {
+  explanation: CalculationExplanation;
   calculatorType: CalculatorId;
   /** Magnitud principal calculada (volumen o área). */
   quantity: number;
@@ -98,7 +103,8 @@ function build(
   quantity: number,
   unit: string,
   wastePct: number,
-  priced: PricedResult
+  priced: PricedResult,
+  input: object
 ): CalculationResult {
   return {
     calculatorType: type,
@@ -107,6 +113,7 @@ function build(
     wastePct,
     ...priced,
     timestamp: new Date().toISOString(),
+    explanation: explainCalculation(type, input as Record<string, unknown>),
   };
 }
 
@@ -147,7 +154,7 @@ export const calculatorService = {
       { role: 'sand', quantity: round(volume * mix.sandM3 * f) },
       { role: 'gravel', quantity: round(volume * mix.gravelM3 * f) },
     ];
-    return build('concrete', volume, 'm³', waste, await priceItems(items));
+    return build('concrete', volume, 'm³', waste, await priceItems(items), input);
   },
 
   /** HU-02.3 — ladrillos y mortero de pega de un muro. */
@@ -159,10 +166,17 @@ export const calculatorService = {
 
     const unit = BRICK_UNITS[input.brickUnit ?? DEFAULT_VARIANT.brickUnit];
     const items: Item[] = [
-      { role: 'brick', material: unit.material, quantity: Math.ceil(area * unit.perM2 * f) },
-      { role: 'mortarMix', quantity: Math.ceil((area * unit.mortarKg * f) / MORTAR_SACK_KG) },
+      {
+        role: 'brick',
+        material: unit.material,
+        quantity: Math.ceil(area * unit.perM2 * f),
+      },
+      {
+        role: 'mortarMix',
+        quantity: Math.ceil((area * unit.mortarKg * f) / MORTAR_SACK_KG),
+      },
     ];
-    return build('brick', area, 'm²', waste, await priceItems(items));
+    return build('brick', area, 'm²', waste, await priceItems(items), input);
   },
 
   /** HU-02.4 — mortero de pega o revoque. */
@@ -177,7 +191,7 @@ export const calculatorService = {
       { role: 'cement', quantity: Math.ceil(volume * mix.cementSacks * f) },
       { role: 'sand', quantity: round(volume * mix.sandM3 * f) },
     ];
-    return build('mortar', volume, 'm³', waste, await priceItems(items));
+    return build('mortar', volume, 'm³', waste, await priceItems(items), input);
   },
 
   /** Muro en bloque de concreto n.º 4 y su mortero de pega. */
@@ -189,10 +203,17 @@ export const calculatorService = {
 
     const block = CONCRETE_BLOCKS[input.blockSize ?? DEFAULT_VARIANT.blockSize];
     const items: Item[] = [
-      { role: 'block', material: block.material, quantity: Math.ceil(area * block.perM2 * f) },
-      { role: 'mortarMix', quantity: Math.ceil((area * block.mortarKg * f) / MORTAR_SACK_KG) },
+      {
+        role: 'block',
+        material: block.material,
+        quantity: Math.ceil(area * block.perM2 * f),
+      },
+      {
+        role: 'mortarMix',
+        quantity: Math.ceil((area * block.mortarKg * f) / MORTAR_SACK_KG),
+      },
     ];
-    return build('block', area, 'm²', waste, await priceItems(items));
+    return build('block', area, 'm²', waste, await priceItems(items), input);
   },
 
   /** Malla de varilla para una placa (losa o contrapiso) y el alambre de amarre. */
@@ -215,9 +236,12 @@ export const calculatorService = {
     const steelKg = bars * REBAR.barLengthM * bar.kgPerM;
     const items: Item[] = [
       { role: 'rebar', material: bar.material, quantity: bars },
-      { role: 'tieWire', quantity: Math.max(1, Math.ceil(steelKg * REBAR.tieWireKgPerKgSteel)) },
+      {
+        role: 'tieWire',
+        quantity: Math.max(1, Math.ceil(steelKg * REBAR.tieWireKgPerKgSteel)),
+      },
     ];
-    return build('rebar', area, 'm²', waste, await priceItems(items));
+    return build('rebar', area, 'm²', waste, await priceItems(items), input);
   },
 
   /** Pintura vinilo para un área dada y un número de manos. */
@@ -235,7 +259,7 @@ export const calculatorService = {
         quantity: Math.ceil((input.area * coats * f) / paint.m2PerGallonCoat),
       },
     ];
-    return build('paint', input.area, 'm²', waste, await priceItems(items));
+    return build('paint', input.area, 'm²', waste, await priceItems(items), input);
   },
 
   /** Piso o enchape cerámico: baldosa, pegante y boquilla. */
@@ -246,7 +270,11 @@ export const calculatorService = {
 
     const tile = TILE_TYPES[input.tileType ?? DEFAULT_VARIANT.tileType];
     const items: Item[] = [
-      { role: 'tile', material: tile.material, quantity: round(input.area * f) },
+      {
+        role: 'tile',
+        material: tile.material,
+        quantity: round(input.area * f),
+      },
       {
         role: 'tileAdhesive',
         material: tile.adhesive,
@@ -257,7 +285,7 @@ export const calculatorService = {
         quantity: Math.ceil((input.area * tile.groutKg * f) / GROUT_BAG_KG),
       },
     ];
-    return build('tile', input.area, 'm²', waste, await priceItems(items));
+    return build('tile', input.area, 'm²', waste, await priceItems(items), input);
   },
 
   /** Cimiento ciclópeo: hormigón y piedra rajón. */
@@ -270,12 +298,21 @@ export const calculatorService = {
     const stoneShare = (input.stonePct ?? DEFAULT_STONE_PCT) / 100;
     const concreteVolume = volume * (1 - stoneShare);
     const items: Item[] = [
-      { role: 'cement', quantity: Math.ceil(concreteVolume * CONCRETE_PER_M3.cementSacks * f) },
-      { role: 'sand', quantity: round(concreteVolume * CONCRETE_PER_M3.sandM3 * f) },
-      { role: 'gravel', quantity: round(concreteVolume * CONCRETE_PER_M3.gravelM3 * f) },
+      {
+        role: 'cement',
+        quantity: Math.ceil(concreteVolume * CONCRETE_PER_M3.cementSacks * f),
+      },
+      {
+        role: 'sand',
+        quantity: round(concreteVolume * CONCRETE_PER_M3.sandM3 * f),
+      },
+      {
+        role: 'gravel',
+        quantity: round(concreteVolume * CONCRETE_PER_M3.gravelM3 * f),
+      },
     ];
     if (stoneShare > 0) items.push({ role: 'stone', quantity: round(volume * stoneShare * f) });
-    return build('footing', volume, 'm³', waste, await priceItems(items));
+    return build('footing', volume, 'm³', waste, await priceItems(items), input);
   },
 
   /** Cubierta en teja: tejas según su área útil (con traslapos) y ganchos de amarre. */
@@ -288,9 +325,13 @@ export const calculatorService = {
     const sheets = Math.ceil((input.area / sheet.usefulM2) * f);
     const items: Item[] = [
       { role: 'roofSheet', material: sheet.material, quantity: sheets },
-      { role: 'roofHook', material: ROOF_HOOK_MATERIAL, quantity: sheets * sheet.hooksPerSheet },
+      {
+        role: 'roofHook',
+        material: ROOF_HOOK_MATERIAL,
+        quantity: sheets * sheet.hooksPerSheet,
+      },
     ];
-    return build('roof', input.area, 'm²', waste, await priceItems(items));
+    return build('roof', input.area, 'm²', waste, await priceItems(items), input);
   },
 
   /**

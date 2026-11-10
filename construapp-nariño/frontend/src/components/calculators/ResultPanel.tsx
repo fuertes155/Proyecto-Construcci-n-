@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PiFloppyDisk, PiStorefront } from 'react-icons/pi';
+import { PiFloppyDisk, PiStorefront, PiPlus } from 'react-icons/pi';
 import { Link } from 'react-router-dom';
 import type { CalculationResult, PricedMaterial } from '../../services/calculators';
 import type { ProjectListItem } from '../../services/projects';
@@ -17,6 +17,10 @@ interface ResultPanelProps {
   onSave: (projectId: string) => void;
   saving: boolean;
   outdated?: boolean;
+  onCreate: () => void;
+  projectsLoading?: boolean;
+  projectsError?: boolean;
+  onRetryProjects: () => void;
 }
 
 function MaterialInfo({ material }: { material: PricedMaterial }) {
@@ -39,6 +43,10 @@ export default function ResultPanel({
   onSave,
   saving,
   outdated = false,
+  onCreate,
+  projectsLoading,
+  projectsError,
+  onRetryProjects,
 }: ResultPanelProps) {
   const [projectId, setProjectId] = useState('');
   const meta = CALCULATOR_META[result.calculatorType];
@@ -191,22 +199,75 @@ export default function ResultPanel({
           </div>
         ) : (
           <p className="text-sm text-ink-muted">
-            <Link to="/login" className="link">
+            <Link
+              to="/login"
+              state={{
+                from: {
+                  pathname: '/calculators',
+                  search: `?tipo=${result.calculatorType}`,
+                },
+              }}
+              className="link"
+            >
               Inicia sesión
             </Link>{' '}
             para guardar este cálculo en un proyecto.
           </p>
         )}
-        {isLoggedIn && projects?.length === 0 && (
-          <p className="mt-3 text-sm text-ink-muted">
-            No tienes proyectos aún.{' '}
-            <Link to="/projects" className="link">
-              Crea uno
-            </Link>
-            .
-          </p>
+        {isLoggedIn && (
+          <div className="mt-4 space-y-3">
+            {projectsLoading && <p className="text-sm text-ink-muted">Cargando tus proyectos…</p>}
+            {projectsError && (
+              <Alert
+                tone="warning"
+                title="No pudimos cargar tus proyectos"
+                action={
+                  <Button variant="secondary" size="sm" onClick={onRetryProjects}>
+                    Reintentar
+                  </Button>
+                }
+              >
+                Tu cálculo se conserva en esta pestaña.
+              </Alert>
+            )}
+            {projects?.length === 0 && (
+              <p className="text-sm text-ink-muted">
+                Crea tu primera obra y guarda este cálculo en un solo paso.
+              </p>
+            )}
+            <Button
+              variant="secondary"
+              icon={<PiPlus aria-hidden="true" />}
+              disabled={outdated || saving}
+              onClick={onCreate}
+            >
+              Crear proyecto y guardar
+            </Button>
+            <p className="text-xs text-ink-subtle">
+              Al guardar se recalcula con los precios actuales del catálogo.
+            </p>
+          </div>
         )}
       </div>
+
+      {result.explanation && (
+        <details className="border-t border-line p-5 sm:px-6">
+          <summary className="cursor-pointer font-semibold text-ink">¿Cómo se calculó?</summary>
+          <p className="mt-3 rounded-md bg-surface-muted p-3 font-semibold">
+            {result.explanation.formula}
+          </p>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-ink-muted">
+            {result.explanation.steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-ink-subtle">
+            {result.explanation.assumptions.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </details>
+      )}
 
       <p className="border-t border-line px-5 py-3 text-xs text-ink-subtle sm:px-6">
         Las cantidades son aproximadas (referencias de obra). Valídalas con un profesional antes de

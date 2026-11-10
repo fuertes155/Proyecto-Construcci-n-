@@ -25,27 +25,33 @@ const common: Options = {
   },
 };
 
+const postgresOptions: Options = {
+  ...common,
+  pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
+  retry: { max: 1 },
+  ...(process.env.DB_SSL === 'true'
+    ? { dialectOptions: { ssl: { require: true, rejectUnauthorized: true } } }
+    : {}),
+};
+
 const sequelize =
   dialect === 'sqlite'
     ? new Sequelize({
         ...common,
-        storage:
-          process.env.DB_STORAGE ?? path.resolve(process.cwd(), 'data/construapp.sqlite'),
+        storage: process.env.DB_STORAGE ?? path.resolve(process.cwd(), 'data/construapp.sqlite'),
       })
-    : new Sequelize(
-        process.env.DB_NAME ?? 'construapp_narino',
-        process.env.DB_USER ?? 'construapp_user',
-        process.env.DB_PASSWORD ?? 'construapp_password',
-        {
-          ...common,
-          host: process.env.DB_HOST ?? 'localhost',
-          port: parseInt(process.env.DB_PORT ?? '5433', 10),
-          pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
-          // Un solo reintento rápido: el servidor no debe quedarse colgado
-          // 30 s en el arranque si la base no está.
-          retry: { max: 1 },
-        }
-      );
+    : process.env.DATABASE_URL
+      ? new Sequelize(process.env.DATABASE_URL, postgresOptions)
+      : new Sequelize(
+          process.env.DB_NAME ?? 'construapp_narino',
+          process.env.DB_USER ?? 'construapp_user',
+          process.env.DB_PASSWORD ?? 'construapp_password',
+          {
+            ...postgresOptions,
+            host: process.env.DB_HOST ?? 'localhost',
+            port: parseInt(process.env.DB_PORT ?? '5433', 10),
+          }
+        );
 
 let connected = false;
 
@@ -64,11 +70,7 @@ export async function connectDatabase(): Promise<boolean> {
     // Sequelize suele poner la causa real (ECONNREFUSED, auth, etc.) en `.original`.
     const err = error as Error & { original?: Error; parent?: Error };
     const detail =
-      err.original?.message ||
-      err.parent?.message ||
-      err.message ||
-      err.name ||
-      'sin detalle';
+      err.original?.message || err.parent?.message || err.message || err.name || 'sin detalle';
     logger.error(
       `No se pudo conectar a la base de datos (${dialect}). ` +
         `El servidor sigue en marcha; revisa DB_* en backend/.env o ejecuta ` +

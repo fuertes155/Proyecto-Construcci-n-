@@ -2,13 +2,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch, type Resolver } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { PiCalculator, PiListChecks } from 'react-icons/pi';
 import { z, type ZodTypeAny } from 'zod';
 import { useAuth } from '../../hooks/useAuth';
 import { apiErrorMessage } from '../../services/api';
 import type { CalculationResult, CalculatorId } from '../../services/calculators';
-import { projectsApi } from '../../services/projects';
+import { projectsApi, type CreateProjectInput } from '../../services/projects';
+import { readCalculationDraft, writeCalculationDraft } from '../../utils/calculationDraft';
+import ProjectForm from '../projects/ProjectForm';
+import Modal from '../ui/Modal';
+import Alert from '../ui/Alert';
 import { formatQty } from '../../utils/format';
 import Button from '../ui/Button';
 import { SelectField, TextField } from '../ui/Field';
@@ -64,8 +69,13 @@ function dimValue(raw: unknown, unit: string): string | undefined {
 
 export default function CalculatorPanel({ calculatorId, fields, run }: CalculatorPanelProps) {
   const { user } = useAuth();
-  const [result, setResult] = useState<CalculationResult | null>(null);
-  const [lastInputs, setLastInputs] = useState<CalculatorInputs | null>(null);
+  const navigate = useNavigate();
+  const [draft] = useState(() => readCalculationDraft(calculatorId));
+  const [restored, setRestored] = useState(!!draft?.result);
+  const [result, setResult] = useState<CalculationResult | null>(draft?.result ?? null);
+  const [lastInputs, setLastInputs] = useState<CalculatorInputs | null>(draft?.lastInputs ?? null);
+  const [creating, setCreating] = useState(false);
+  const [savedProjectId, setSavedProjectId] = useState<string | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -85,6 +95,7 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema) as Resolver<FormValues>,
@@ -93,11 +104,15 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
       ...Object.fromEntries(
         fields.filter((f) => f.defaultValue !== undefined).map((f) => [f.name, f.defaultValue])
       ),
+      ...draft?.values,
     },
   });
 
   // El croquis refleja en vivo las medidas que se van escribiendo.
   const watched = useWatch({ control });
+  useEffect(() => {
+    writeCalculationDraft(calculatorId, watched, lastInputs, result);
+  }, [calculatorId, watched, lastInputs, result]);
   const sameNumber = (current: unknown, saved: unknown) =>
     current === undefined && saved === undefined
       ? true
@@ -119,8 +134,13 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
     ])
   );
 
-  const { data: projectsData } = useQuery({
-    queryKey: ['projects'],
+  const {
+    data: projectsData,
+    isError: projectsError,
+    isLoading: projectsLoading,
+    refetch: reloadProjects,
+  } = useQuery({
+    queryKey: ['projects', 'choices', user?.id],
     queryFn: projectsApi.list,
     enabled: !!user,
   });
@@ -128,11 +148,31 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
   const saveMutation = useMutation({
     mutationFn: ({ projectId }: { projectId: string }) =>
       projectsApi.addCalculation(projectId, calculatorId, lastInputs ?? {}),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       toast.success('Cálculo guardado en el proyecto');
+      setSavedProjectId(variables.projectId);
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
     onError: (err) => toast.error(apiErrorMessage(err, 'No se pudo guardar el cálculo')),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (input: CreateProjectInput) =>
+      projectsApi.create({
+        ...input,
+        initialCalculation: {
+          calculatorType: calculatorId,
+          inputs: lastInputs!,
+        },
+      }),
+    onSuccess: (project) => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setCreating(false);
+      toast.success('Proyecto creado con tu cálculo');
+      navigate(`/projects/${project.id}`);
+    },
+    onError: (err) =>
+      toast.error(apiErrorMessage(err, 'No se pudo crear el proyecto. Tu cálculo sigue aquí.')),
   });
 
   // En pantallas angostas el resultado queda debajo del formulario: llevarlo a la vista.
@@ -156,6 +196,8 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
       const res = await run(inputs);
       setResult(res);
       setLastInputs(inputs);
+      setRestored(false);
+      setSavedProjectId(null);
     } catch (err) {
       toast.error(apiErrorMessage(err, 'No se pudo calcular'));
     }
@@ -237,11 +279,46 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
             >
               {isSubmitting ? 'Calculando…' : 'Calcular materiales'}
             </Button>
+            <Button
+              variant="ghost"
+              fullWidth
+              className="mt-2"
+              disabled={isSubmitting || saveMutation.isPending || createMutation.isPending}
+              onClick={() => {
+                reset({
+                  wastePct: 5,
+                  ...Object.fromEntries(fields.map((f) => [f.name, f.defaultValue ?? ''])),
+                });
+                setResult(null);
+                setLastInputs(null);
+                setRestored(false);
+                setSavedProjectId(null);
+              }}
+            >
+              Limpiar medidas
+            </Button>
           </div>
         </div>
       </form>
 
       <div ref={resultRef} className="scroll-mt-20" aria-live="polite">
+        {restored && (
+          <div className="mb-4">
+            <Alert tone="info" title="Recuperamos tu cálculo">
+              Las medidas y el resultado se conservaron en esta pestaña. Al guardar se actualizan
+              los precios del catálogo.
+            </Alert>
+          </div>
+        )}
+        {savedProjectId && !outdated && (
+          <div className="mb-4">
+            <Alert tone="success" title="Cálculo guardado">
+              <Link className="link" to={`/projects/${savedProjectId}`}>
+                Ver proyecto y lista de compra
+              </Link>
+            </Alert>
+          </div>
+        )}
         {result ? (
           <ResultPanel
             result={result}
@@ -252,6 +329,10 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
             }}
             saving={saveMutation.isPending}
             outdated={outdated}
+            onCreate={() => setCreating(true)}
+            projectsLoading={projectsLoading}
+            projectsError={projectsError}
+            onRetryProjects={() => reloadProjects()}
           />
         ) : (
           <div className="card overflow-hidden">
@@ -289,6 +370,22 @@ export default function CalculatorPanel({ calculatorId, fields, run }: Calculato
           </div>
         )}
       </div>
+      <Modal
+        open={creating}
+        onClose={() => {
+          if (!createMutation.isPending) setCreating(false);
+        }}
+        title="Crear proyecto y guardar cálculo"
+      >
+        <ProjectForm
+          submitting={createMutation.isPending}
+          submitLabel="Crear proyecto y guardar"
+          onCancel={() => setCreating(false)}
+          onSubmit={(input) => {
+            if (!outdated && lastInputs && !createMutation.isPending) createMutation.mutate(input);
+          }}
+        />
+      </Modal>
     </div>
   );
 }

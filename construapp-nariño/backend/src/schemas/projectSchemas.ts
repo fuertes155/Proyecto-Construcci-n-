@@ -24,6 +24,12 @@ export const createProjectSchema = Joi.object({
   budget: Joi.number().positive().max(1e15).allow(null),
   startDate: calendarDate,
   endDate: endDateAfterStart,
+  initialCalculation: Joi.object({
+    calculatorType: Joi.string()
+      .valid(...CALCULATOR_IDS)
+      .required(),
+    inputs: Joi.object().required(),
+  }),
 });
 
 export const updateProjectSchema = Joi.object({

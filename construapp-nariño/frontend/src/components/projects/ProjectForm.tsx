@@ -27,9 +27,15 @@ interface ProjectFormProps {
   onSubmit: (input: CreateProjectInput) => void;
   onCancel: () => void;
   submitting: boolean;
+  submitLabel?: string;
 }
 
-export default function ProjectForm({ onSubmit, onCancel, submitting }: ProjectFormProps) {
+export default function ProjectForm({
+  onSubmit,
+  onCancel,
+  submitting,
+  submitLabel = 'Crear proyecto',
+}: ProjectFormProps) {
   const {
     register,
     handleSubmit,
@@ -110,11 +116,11 @@ export default function ProjectForm({ onSubmit, onCancel, submitting }: ProjectF
       />
 
       <div className="flex flex-col-reverse gap-2 pt-2 sm:col-span-2 sm:flex-row sm:justify-end">
-        <Button variant="secondary" onClick={onCancel}>
+        <Button variant="secondary" onClick={onCancel} disabled={submitting}>
           Cancelar
         </Button>
         <Button type="submit" loading={submitting}>
-          {submitting ? 'Creando…' : 'Crear proyecto'}
+          {submitting ? 'Guardando…' : submitLabel}
         </Button>
       </div>
     </form>

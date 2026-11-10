@@ -2,13 +2,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { PiEnvelopeSimple, PiLockKey, PiUser } from 'react-icons/pi';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import AuthLayout from '../../components/AuthLayout';
 import Button from '../../components/ui/Button';
 import { PasswordField, SelectField, TextField } from '../../components/ui/Field';
 import { useAuth } from '../../hooks/useAuth';
 import { apiErrorMessage } from '../../services/api';
+import { authReturn } from '../../utils/authReturn';
 
 const USER_TYPES = [
   { value: 'owner', label: 'Propietario / dueño de obra' },
@@ -28,6 +29,8 @@ type FormValues = z.infer<typeof schema>;
 export default function Register() {
   const { user, register: registerUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = authReturn(location.state);
 
   const {
     register,
@@ -38,13 +41,13 @@ export default function Register() {
     defaultValues: { userType: 'contractor' },
   });
 
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user) return <Navigate to={from} replace />;
 
   const onSubmit = async (values: FormValues) => {
     try {
       await registerUser(values);
       toast.success('Cuenta creada');
-      navigate('/dashboard', { replace: true });
+      navigate(from, { replace: true });
     } catch (err) {
       toast.error(apiErrorMessage(err, 'No se pudo crear la cuenta'));
     }
@@ -57,7 +60,7 @@ export default function Register() {
       footer={
         <>
           ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="link">
+          <Link to="/login" state={location.state} className="link">
             Iniciar sesión
           </Link>
         </>

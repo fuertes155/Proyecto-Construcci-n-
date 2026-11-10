@@ -1,250 +1,89 @@
-# 🏗️ ConstruApp Nariño
+# ConstruApp Nariño
 
-**Aplicación de Cálculo de Materiales de Construcción para el Mercado Local de Nariño, Colombia**
+Aplicación web para estimar materiales de construcción, consultar precios publicados y organizar presupuestos por obra. Entrega académica: **10 de noviembre de 2026**.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Status](https://img.shields.io/badge/status-En%20Desarrollo-yellow)
+## Arranque para la entrega
 
-## 📋 Descripción
+Desde esta carpeta, con Node.js y las dependencias instaladas:
 
-ConstruApp Nariño ayuda a profesionales, maestros de obra y propietarios a calcular materiales de construcción. Integra precios publicados por comercios de Pasto y Colombia, con enlace a la fuente, presentación, condiciones y fecha de consulta. Consulta el [alcance y actualización de los precios](./docs/PRECIOS-REALES.md).
-
-## 🎯 Características Principales
-
-### ✅ Funcionalidades Core
-- **Calculadoras Especializadas**
-  - Cálculo de hormigón/concreto (volumen, proporción, consumo)
-  - Cálculo de mampostería (ladrillos, bloques, mortero)
-  - Cálculo de estructuras (acero, madera, encofrado)
-  - Cálculo de acabados (pintura, baldosas, revoque)
-  - Cálculo de instalaciones (tuberías, cableado eléctrico)
-
-- **Precios publicados por comercios reales**
-  - Catálogo de proveedores de Pasto y otras ciudades de Colombia
-  - Actualización manual con fuente y fecha de consulta
-  - Comparativa de precios entre proveedores
-  - Condiciones de compra y disponibilidad indicadas por la fuente
-
-- **Gestión de Proyectos**
-  - Creación de múltiples proyectos
-  - Presupuestos personalizados
-  - Generación de reportes y cotizaciones PDF/Excel
-  - Historial de proyectos
-
-### 👥 Interfaces Adaptadas
-- **Para Ingenieros/Arquitectos**: Herramientas avanzadas, análisis técnicos
-- **Para Maestros de Obra**: Interfaz simplificada, tutoriales visuales
-- **Para Propietarios**: Presupuestos claros, comparativas
-
-## 🚀 Tecnologías
-
-### Backend
-- **Node.js** con Express.js
-- **PostgreSQL** para base de datos estructurada
-- **Redis** para caché de precios
-- **JWT** para autenticación
-
-### Frontend
-- **React** con Vite
-- **TypeScript** para type safety
-- **Tailwind CSS** para estilos
-- **React Query** para manejo de estado
-
-### Mobile
-- **React Native** / **Expo**
-- Soporte offline
-- Funcionalidad multiplataforma (iOS/Android)
-
-### DevOps
-- **Docker** para containerización
-- **GitHub Actions** para CI/CD
-- **AWS/DigitalOcean** para hosting
-
-## 📁 Estructura del Proyecto
-
-```
-construapp-nariño/
-├── backend/                 # API REST Node.js/Express
-│   ├── src/
-│   │   ├── routes/         # Rutas de API
-│   │   ├── controllers/    # Controladores de lógica
-│   │   ├── models/         # Modelos de base de datos
-│   │   ├── services/       # Servicios de negocio
-│   │   ├── middleware/     # Middleware personalizado
-│   │   ├── config/         # Configuraciones
-│   │   └── utils/          # Utilidades
-│   ├── tests/              # Tests del backend
-│   ├── package.json
-│   └── .env.example
-│
-├── frontend/               # Aplicación React Web
-│   ├── src/
-│   │   ├── components/    # Componentes reutilizables
-│   │   ├── pages/         # Páginas principales
-│   │   ├── services/      # Servicios API
-│   │   ├── hooks/         # Hooks personalizados
-│   │   ├── context/       # Context API
-│   │   ├── styles/        # Estilos globales
-│   │   └── utils/         # Funciones utilitarias
-│   ├── public/            # Archivos estáticos
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── mobile/                 # Aplicación React Native (Expo SDK 50)
-│   ├── app/              # Rutas de expo-router
-│   ├── app.json           # Configuración Expo
-│   ├── babel.config.js
-│   ├── tsconfig.json
-│   └── package.json
-│
-├── docs/                   # Documentación
-│   ├── ESTADO.md         # Estado actual del proyecto + próximos pasos
-│   ├── API.md             # Documentación de API
-│   ├── SETUP.md           # Guía de instalación
-│   ├── ARCHITECTURE.md    # Arquitectura del sistema
-│   ├── ROADMAP.md         # Fases de desarrollo
-│   └── DEPLOYMENT.md      # Guía de despliegue (borrador)
-│
-├── config/                 # Archivos de configuración (vacío por ahora)
-│
-├── docker-compose.yml
-├── .gitignore
-├── package.json           # Monorepo root (npm workspaces)
-├── package-lock.json      # Lockfile versionado
-└── README.md             # Este archivo
+```powershell
+npm run demo
 ```
 
-## 🔧 Instalación Rápida
+El comando inicia Docker Desktop cuando hace falta, levanta PostgreSQL y Redis, aplica las migraciones, prepara el catálogo y la obra de ejemplo, comprueba la conexión y arranca API y web. Abre **http://localhost:3000**. Mantén la terminal abierta; Ctrl+C cierra API y web. Los contenedores conservan los datos.
 
-### Requisitos Previos
-- Node.js >= 18.0.0 (probado con Node 20/22)
-- npm >= 9 (el monorepo usa **npm workspaces**)
-- Git
-- PostgreSQL 14+ (opcional hasta que se implemente la capa de datos)
-- Docker (opcional)
+**Cuenta local de demostración:** `demo@construapp.co` · contraseña `demo-12345678`. Es una cuenta de desarrollo, sin permisos de administración. No utilizarla en producción.
 
-### Pasos
+**Obra preparada:** “Remodelación de habitación en Pasto · Demo”, con pintura, piso y muro. Volver a ejecutar el comando conserva los cambios de la obra existente.
 
-1. **Clonar el repositorio**
-```bash
-git clone https://github.com/tuusuario/construapp-nariño.git
-cd construapp-nariño
+Si Docker no está disponible:
+
+```powershell
+npm run demo:local
 ```
 
-2. **Instalar dependencias** (una sola vez, desde la raíz)
-```bash
-npm install
-```
+Este modo utiliza SQLite en `backend/data/entrega-demo.sqlite`, independiente de PostgreSQL. Conserva los datos entre arranques y utiliza las mismas calculadoras y catálogo. No cambia `backend/.env`. No es sincronización offline del navegador. Ejecuta un solo modo a la vez.
 
-3. **Configurar variables de entorno**
-```bash
-cp backend/.env.example backend/.env
-# Editar backend/.env con tus configuraciones
-```
+Consulta el [guion de entrega](docs/ENTREGA-FINAL.md) y el [inicio rápido](QUICKSTART.md).
 
-4. **Ejecutar migraciones de base de datos** (aún sin migraciones definidas)
-```bash
-npm run migrate --workspace=construapp-backend
-```
+## Funciones disponibles
 
-5. **Iniciar los servicios**
-```bash
-# Todo a la vez, desde la raíz
-npm run dev
+- Nueve calculadoras: hormigón, cimiento ciclópeo, acero, mampostería, bloque, mortero, piso/enchape, pintura y cubierta.
+- Medidas, unidades, variantes de materiales, desperdicio, desglose de cantidades y costo en COP.
+- Explicación desplegable de fórmula, rendimientos y redondeos, generada con las constantes del motor.
+- Borradores por calculadora en la pestaña durante un máximo de 12 horas desde su último guardado. Se recuperan al navegar, recargar o iniciar sesión; “Limpiar medidas” reinicia el cálculo.
+- Registro, inicio de sesión, recuperación de contraseña y permisos de usuario/administrador.
+- Proyectos, presupuesto objetivo, cálculos guardados, estados y lista de compra consolidada.
+- Creación de proyecto y primer cálculo en una operación transaccional. Los importes siempre se recalculan en el servidor.
+- Informe del proyecto en A4 mediante **Imprimir / Guardar PDF**, con cantidades, costos, fuentes y condiciones.
+- Catálogo con 33 materiales y 34 precios publicados de siete comercios; búsqueda y filtros de proveedores.
+- Administración de materiales, proveedores, precios y estado de usuarios.
+- Interfaz web adaptable a móviles, tema claro/oscuro, etiquetas de formulario y estados de error.
 
-# O por separado:
-npm run dev:backend    # http://localhost:5000
-npm run dev:frontend   # http://localhost:3000
-npm run dev:mobile     # Expo
-```
+## Alcance y límites
 
-## 📖 Documentación
+Los precios del lote inicial fueron consultados el **5 de noviembre de 2026**; no se actualizan automáticamente ni garantizan existencias o entrega en Nariño. Cada fuente conserva su fecha y condiciones. Los cálculos guardados mantienen su precio histórico. Véase [PRECIOS-REALES.md](docs/PRECIOS-REALES.md).
 
-- [Estado del Proyecto](./docs/ESTADO.md) - Estado real actual y próximos pasos
-- [Progreso del MVP](./docs/PROGRESO-MVP.md) - Checklist vivo de historias
-- [Historias de Usuario](./docs/HISTORIAS-DE-USUARIO.md) - Épicas y backlog ágil
-- [API Documentation](./docs/API.md) - Documentación completa de endpoints
-- [Setup Guide](./docs/SETUP.md) - Guía de instalación detallada
-- [Architecture](./docs/ARCHITECTURE.md) - Diseño de la arquitectura
-- [Roadmap](./docs/ROADMAP.md) - Fases de desarrollo
-- [Deployment](./docs/DEPLOYMENT.md) - Guía de despliegue (borrador)
+Las cantidades son estimaciones académicas basadas en rendimientos de referencia; no sustituyen un diseño estructural. Los totales no incluyen mano de obra y pueden requerir transporte, impuestos pendientes, pedidos mínimos o redondeo a empaques.
 
-## 🤝 Características por Fase
+La aplicación React Native/Expo contiene una portada de prototipo. Las calculadoras y la gestión de obras funcionan en la **web adaptable a celular**. Excel, instalaciones eléctricas/hidráulicas, sincronización offline, pagos y actualización automática de precios quedan como trabajo futuro.
 
-### Fase 1: MVP (Meses 1-6)
-- ✅ Calculadoras básicas
-- ✅ Base de datos de proveedores
-- ✅ Interfaz web y móvil
-- ✅ Sistema de precios manual
-- ✅ Autenticación básica
+La recuperación por correo requiere SMTP configurado. La generación PDF usa la impresión del navegador; no es un servicio externo de exportación.
 
-### Fase 2: Expansión (Meses 7-9)
-- 🔄 Actualización automática de precios
-- 🔄 Herramientas avanzadas
-- 🔄 Generación de reportes PDF
-- 🔄 Programa de asociaciones
+## Estructura y tecnologías
 
-### Fase 3: Consolidación (Meses 10-15)
-- 📅 API para integración empresarial
-- 📅 Módulo de gestión de proyectos
-- 📅 Análisis de sostenibilidad
-- 📅 Expansión regional
+- `backend/`: Node.js, Express, TypeScript, Sequelize, PostgreSQL, JWT y Redis opcional.
+- `frontend/`: React, Vite, TypeScript, Tailwind CSS y TanStack Query.
+- `mobile/`: prototipo React Native/Expo.
+- `scripts/start.mjs`: arranque coordinado y comprobación de disponibilidad.
+- `docs/`: documentación, alcance y guion.
 
-## 💰 Modelo de Negocio
+## Comandos
 
-- **Freemium**: Cálculos básicos gratuitos
-- **Premium**: $5-10 USD/mes - Acceso completo
-- **Empresarial**: Soluciones personalizadas
-- **Comisiones**: Por referral de proveedores
+| Comando | Función |
+| --- | --- |
+| `npm install` | Instalar dependencias del monorepo |
+| `npm run demo` | Preparar y abrir el entorno con PostgreSQL y Redis |
+| `npm run demo:local` | Preparar y abrir el respaldo independiente con SQLite |
+| `npm run demo:prepare` | Preparar PostgreSQL y datos de demo sin iniciar la web |
+| `npm run dev` | Arrancar servicios y web con la configuración existente |
+| `npm run dev:backend` | API por separado en 5000 |
+| `npm run dev:frontend` | Web por separado en 3000 |
+| `npm run dev:mobile` | Prototipo Expo |
+| `npm run typecheck` | Comprobar TypeScript de los tres paquetes |
+| `npm test` | Pruebas existentes; backend en secuencia para evitar saturación |
+| `npm run build --workspace=construapp-frontend` | Compilar web de producción |
+| `npm run build --workspace=construapp-backend` | Compilar API |
 
-## 🌱 Sostenibilidad
+Para una instalación nueva, copia `backend/.env.example` a `backend/.env` y ajusta la configuración antes del modo PostgreSQL. El respaldo SQLite puede usarse sin ese archivo. Los secretos y las bases locales no se versionan.
 
-La aplicación promueve prácticas de construcción sostenible:
-- Cálculo de huella de carbono por material
-- Sugerencias de materiales eco-amigables
-- Optimización de desperdicios
-- Integración con sellos ambientales (ISO 14001)
+## Documentación
 
-## 📊 KPIs de Éxito - Año 1
+- [Entrega y demostración](docs/ENTREGA-FINAL.md)
+- [Estado actual](docs/ESTADO.md)
+- [API](docs/API.md)
+- [Arquitectura](docs/ARCHITECTURE.md)
+- [Precios y condiciones](docs/PRECIOS-REALES.md)
+- [Trabajo futuro](docs/ROADMAP.md)
 
-| Métrica | Meta |
-|---------|------|
-| Usuarios Registrados | 15,000 |
-| Usuarios Activos Mensuales | 5,000 |
-| Cálculos Realizados | 50,000/mes |
-| Proveedores Integrados | 100 |
-| Retención 30 días | 40% |
-| NPS Score | 50+ |
-| Ingresos Mensuales | $5,000 USD |
-
-## 🛠️ Contribuir
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📝 Licencia
-
-Este proyecto está bajo la licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
-
-## 📞 Soporte
-
-Para soporte y consultas:
-- 📧 Email: support@construappnariño.com
-- 💬 Chat: [Discord Community](https://discord.gg/construapp)
-- 📱 WhatsApp: +57 XXX XXX XXXX
-
-## 👥 Team
-
-**ConstruApp Nariño** está desarrollado por un equipo dedicado de ingenieros y especialistas en construcción comprometidos con la innovación en el sector.
-
----
-
-**Hecho con ❤️ para Nariño, Colombia**
-
-Última actualización: Septiembre 2026
+Licencia MIT. Proyecto académico ConstruApp Nariño.

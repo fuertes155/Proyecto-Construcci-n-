@@ -94,7 +94,8 @@ function Avatar({ user, className }: { user: User; className?: string }) {
 export default function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
 
   const handleLogout = async () => {
     await logout();
@@ -209,10 +210,10 @@ export default function Layout() {
                 Crea una cuenta para guardar tus cálculos en proyectos.
               </p>
               <div className="mt-3 grid gap-2">
-                <ButtonLink to="/register" size="sm">
+                <ButtonLink to="/register" state={{ from: location }} size="sm">
                   Crear cuenta
                 </ButtonLink>
-                <ButtonLink to="/login" size="sm" variant="on-dark">
+                <ButtonLink to="/login" state={{ from: location }} size="sm" variant="on-dark">
                   Iniciar sesión
                 </ButtonLink>
               </div>
@@ -292,7 +293,7 @@ export default function Layout() {
         ) : (
           <div className="flex items-center gap-2">
             <ThemeToggle className="hidden sm:inline-flex" />
-            <ButtonLink to="/login" size="sm">
+            <ButtonLink to="/login" state={{ from: location }} size="sm">
               Iniciar sesión
             </ButtonLink>
           </div>

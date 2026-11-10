@@ -48,12 +48,16 @@ describe('proyectos: CRUD y aislamiento por usuario', () => {
   });
 
   it('crea un proyecto (201) con status planning y presupuesto', async () => {
-    const res = await request(app)
-      .post('/api/projects')
-      .set(auth(tokenA))
-      .send({ name: 'Casa en Pasto', location: 'Pasto, Nariño', budget: 2_000_000 });
+    const res = await request(app).post('/api/projects').set(auth(tokenA)).send({
+      name: 'Casa en Pasto',
+      location: 'Pasto, Nariño',
+      budget: 2_000_000,
+    });
     expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ name: 'Casa en Pasto', status: 'planning' });
+    expect(res.body).toMatchObject({
+      name: 'Casa en Pasto',
+      status: 'planning',
+    });
     expect(res.body.id).toEqual(expect.any(String));
     projectId = res.body.id;
   });
@@ -68,7 +72,10 @@ describe('proyectos: CRUD y aislamiento por usuario', () => {
     const res = await request(app).get('/api/projects').set(auth(tokenA));
     expect(res.status).toBe(200);
     expect(res.body.total).toBe(1);
-    expect(res.body.projects[0].summary).toMatchObject({ totalCalculations: 0, totalCost: 0 });
+    expect(res.body.projects[0].summary).toMatchObject({
+      totalCalculations: 0,
+      totalCost: 0,
+    });
   });
 
   it('otro usuario no ve ni accede al proyecto', async () => {
@@ -104,7 +111,10 @@ describe('guardar cálculos y presupuesto acumulado frente al objetivo', () => {
     const res = await request(app)
       .post(`/api/projects/${projectId}/calculations`)
       .set(auth(tokenA))
-      .send({ calculatorType: 'concrete', inputs: { length: 5, width: 4, height: 0.15 } });
+      .send({
+        calculatorType: 'concrete',
+        inputs: { length: 5, width: 4, height: 0.15 },
+      });
     expect(res.status).toBe(201);
     expect(res.body.calculation).toMatchObject({
       calculatorType: 'concrete',
@@ -119,7 +129,10 @@ describe('guardar cálculos y presupuesto acumulado frente al objetivo', () => {
     const res = await request(app)
       .post(`/api/projects/${projectId}/calculations`)
       .set(auth(tokenA))
-      .send({ calculatorType: 'concrete', inputs: { length: 5, width: -4, height: 0.15 } });
+      .send({
+        calculatorType: 'concrete',
+        inputs: { length: 5, width: -4, height: 0.15 },
+      });
     expect(res.status).toBe(400);
     expect(res.body.details).toHaveProperty('width');
   });
@@ -142,14 +155,20 @@ describe('guardar cálculos y presupuesto acumulado frente al objetivo', () => {
       .delete(`/api/projects/${projectId}/calculations/${calcId}`)
       .set(auth(tokenA));
     expect(res.status).toBe(200);
-    expect(res.body.summary).toMatchObject({ totalCalculations: 0, totalCost: 0, overBudget: false });
+    expect(res.body.summary).toMatchObject({
+      totalCalculations: 0,
+      totalCost: 0,
+      overBudget: false,
+    });
   });
 
   it('DELETE del proyecto → 204 y luego 404', async () => {
     expect((await request(app).delete(`/api/projects/${projectId}`).set(auth(tokenA))).status).toBe(
       204
     );
-    expect((await request(app).get(`/api/projects/${projectId}`).set(auth(tokenA))).status).toBe(404);
+    expect((await request(app).get(`/api/projects/${projectId}`).set(auth(tokenA))).status).toBe(
+      404
+    );
   });
 });
 
@@ -167,21 +186,28 @@ describe('fechas de inicio y fin del proyecto', () => {
   });
 
   it('guarda las fechas de calendario tal cual, sin correrlas un día', async () => {
-    const created = await request(app)
-      .post('/api/projects')
-      .set(auth(tokenB))
-      .send({ name: 'Con fechas', startDate: '2026-09-01', endDate: '2027-02-28' });
+    const created = await request(app).post('/api/projects').set(auth(tokenB)).send({
+      name: 'Con fechas',
+      startDate: '2026-09-01',
+      endDate: '2027-02-28',
+    });
     expect(created.status).toBe(201);
 
     const detail = await request(app).get(`/api/projects/${created.body.id}`).set(auth(tokenB));
-    expect(detail.body).toMatchObject({ startDate: '2026-09-01', endDate: '2027-02-28' });
+    expect(detail.body).toMatchObject({
+      startDate: '2026-09-01',
+      endDate: '2027-02-28',
+    });
 
     const updated = await request(app)
       .patch(`/api/projects/${created.body.id}`)
       .set(auth(tokenB))
       .send({ endDate: '2027-03-15' });
     expect(updated.status).toBe(200);
-    expect(updated.body).toMatchObject({ startDate: '2026-09-01', endDate: '2027-03-15' });
+    expect(updated.body).toMatchObject({
+      startDate: '2026-09-01',
+      endDate: '2027-03-15',
+    });
   });
 
   it('acepta una fecha de fin sin fecha de inicio', async () => {
@@ -194,10 +220,11 @@ describe('fechas de inicio y fin del proyecto', () => {
   });
 
   it('rechaza un fin anterior al inicio y fechas con formato inválido → 400', async () => {
-    const before = await request(app)
-      .post('/api/projects')
-      .set(auth(tokenB))
-      .send({ name: 'Al revés', startDate: '2026-09-01', endDate: '2026-08-01' });
+    const before = await request(app).post('/api/projects').set(auth(tokenB)).send({
+      name: 'Al revés',
+      startDate: '2026-09-01',
+      endDate: '2026-08-01',
+    });
     expect(before.status).toBe(400);
     expect(before.body.details).toHaveProperty('endDate');
 
@@ -221,7 +248,10 @@ describe('las calculadoras nuevas se pueden guardar en un proyecto', () => {
       .set(auth(tokenB))
       .send({ calculatorType: 'paint', inputs: { area: 40, coats: 2 } });
     expect(res.status).toBe(201);
-    expect(res.body.calculation).toMatchObject({ calculatorType: 'paint', unit: 'm²' });
+    expect(res.body.calculation).toMatchObject({
+      calculatorType: 'paint',
+      unit: 'm²',
+    });
     expect(res.body.summary.totalCost).toBeGreaterThan(0);
   });
 
@@ -235,5 +265,66 @@ describe('las calculadoras nuevas se pueden guardar en un proyecto', () => {
       .set(auth(tokenB))
       .send({ calculatorType: 'roof', inputs: {} });
     expect(res.status).toBe(400);
+  });
+});
+
+describe('crear una obra con su primer cálculo de forma atómica', () => {
+  it('guarda las medidas, la explicación y el presupuesto recalculado', async () => {
+    const response = await request(app)
+      .post('/api/projects')
+      .set(auth(tokenA))
+      .send({
+        name: 'Obra desde calculadora',
+        initialCalculation: {
+          calculatorType: 'paint',
+          inputs: { area: 40, coats: 2, paintType: 'vinilo2', wastePct: 5 },
+        },
+      });
+    expect(response.status).toBe(201);
+    const detail = await request(app).get(`/api/projects/${response.body.id}`).set(auth(tokenA));
+    expect(detail.body.calculations).toHaveLength(1);
+    const calculation = detail.body.calculations[0];
+    expect(calculation.inputs).toMatchObject({
+      area: 40,
+      paintType: 'vinilo2',
+    });
+    expect(calculation.result.materials[0].quantity).toBe(5);
+    expect(calculation.result.explanation.formula).toContain('/ 20');
+    expect(detail.body.summary.totalCost).toBe(Number(calculation.totalCost));
+    const otherUser = await request(app).get(`/api/projects/${response.body.id}`).set(auth(tokenB));
+    expect(otherUser.status).toBe(403);
+  });
+
+  it('no deja un proyecto vacío cuando las medidas son inválidas', async () => {
+    const response = await request(app)
+      .post('/api/projects')
+      .set(auth(tokenA))
+      .send({
+        name: 'No debe existir',
+        initialCalculation: { calculatorType: 'paint', inputs: { area: -5 } },
+      });
+    expect(response.status).toBe(400);
+    const { Project } = await import('../models/index.js');
+    expect(await Project.count({ where: { name: 'No debe existir' } })).toBe(0);
+  });
+
+  it('revierte el proyecto si falla la escritura del cálculo', async () => {
+    const { Project, ProjectCalculation } = await import('../models/index.js');
+    const failure = jest
+      .spyOn(ProjectCalculation, 'create')
+      .mockRejectedValueOnce(new Error('Fallo de escritura simulado'));
+    try {
+      const response = await request(app)
+        .post('/api/projects')
+        .set(auth(tokenA))
+        .send({
+          name: 'Operación revertida',
+          initialCalculation: { calculatorType: 'paint', inputs: { area: 40 } },
+        });
+      expect(response.status).toBe(500);
+      expect(await Project.count({ where: { name: 'Operación revertida' } })).toBe(0);
+    } finally {
+      failure.mockRestore();
+    }
   });
 });

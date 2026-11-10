@@ -43,4 +43,36 @@ describe('config/database', () => {
     expect(sequelize.config.database).toBe('mi_db');
     expect(sequelize.config.username).toBe('mi_user');
   });
+
+  it('prioriza DATABASE_URL del hosting sobre los valores locales', async () => {
+    process.env.DB_DIALECT = 'postgres';
+    process.env.DATABASE_URL = 'postgres://cloud_user:example@cloud.example.test:5432/cloud_db';
+    process.env.DB_HOST = 'localhost';
+    const { sequelize } = await import('../database.js');
+    expect(sequelize.config.host).toBe('cloud.example.test');
+    expect(Number(sequelize.config.port)).toBe(5432);
+    expect(sequelize.config.database).toBe('cloud_db');
+    expect(sequelize.config.username).toBe('cloud_user');
+    await sequelize.close();
+  });
+
+  it('verifica el certificado cuando se solicita TLS para PostgreSQL externo', async () => {
+    process.env.DB_DIALECT = 'postgres';
+    process.env.DB_SSL = 'true';
+    const { sequelize } = await import('../database.js');
+    expect(sequelize.options.dialectOptions.ssl).toEqual({
+      require: true,
+      rejectUnauthorized: true,
+    });
+    await sequelize.close();
+  });
+
+  it('usa el puerto estándar si la URL del hosting no especifica uno', async () => {
+    process.env.DB_DIALECT = 'postgres';
+    process.env.DATABASE_URL = 'postgres://cloud_user:example@cloud.example.test/cloud_db';
+    process.env.DB_PORT = '5433';
+    const { sequelize } = await import('../database.js');
+    expect(Number(sequelize.config.port)).toBe(5432);
+    await sequelize.close();
+  });
 });
