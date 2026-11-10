@@ -2,6 +2,17 @@
 
 La web compilada y la API se sirven desde un único servicio Node. PostgreSQL guarda usuarios, proyectos y cálculos; Redis es opcional. El despliegue no usa SQLite ni depende de que el computador local esté encendido.
 
+## Despliegue activo
+
+- Web: https://construapp-narino.onrender.com
+- Servicio: https://dashboard.render.com/web/srv-dbpjp4ec6qcc73as18hg
+- Base: https://dashboard.render.com/d/dpg-dbpjmr3ncjis7393dg40-a
+- Versión de código desplegada: `b9c8878545443a68e0fdfd6b131ea6d4dba19be1`, rama `main`.
+- Despliegue confirmado `live` el 10 de noviembre de 2026; flujo de guardado comprobado contra la base remota.
+- Ambos recursos usan el plan gratuito. La base creada vence el **10 de diciembre de 2026**.
+
+La base acepta conexiones internas del workspace; su lista de acceso externo está vacía. Los secretos se guardan en Render y no forman parte del código.
+
 ## Configuración de Render
 
 El archivo `render.yaml` está en la raíz Git, un nivel por encima de esta aplicación. Define un servicio web gratuito y PostgreSQL 15 gratuito en Oregon. Es una configuración reproducible para una instalación nueva. Si los recursos se crearon directamente con CLI/API, no quedan enlazados automáticamente a un Blueprint: los cambios posteriores se aplican al servicio existente.

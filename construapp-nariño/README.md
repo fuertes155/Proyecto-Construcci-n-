@@ -2,6 +2,14 @@
 
 Aplicación web para estimar materiales de construcción, consultar precios publicados y organizar presupuestos por obra. Entrega académica: **10 de noviembre de 2026**.
 
+## Aplicación publicada
+
+**[Abrir ConstruApp Nariño](https://construapp-narino.onrender.com)**. La web, la API y PostgreSQL funcionan en Render; no necesitas encender el servidor local.
+
+Cuenta pública para la presentación: `demo@construapp.co` · contraseña `demo-12345678`. Contiene una obra de ejemplo y no tiene permisos de administrador. Crea una cuenta propia para tus proyectos personales.
+
+El plan gratuito puede tardar alrededor de un minuto al abrir después de estar inactivo. La base gratuita vence el **10 de diciembre de 2026**. Configuración y mantenimiento: [guía de despliegue](docs/DEPLOYMENT.md).
+
 ## Arranque para la entrega
 
 Desde esta carpeta, con Node.js y las dependencias instaladas:
@@ -12,7 +20,7 @@ npm run demo
 
 El comando inicia Docker Desktop cuando hace falta, levanta PostgreSQL y Redis, aplica las migraciones, prepara el catálogo y la obra de ejemplo, comprueba la conexión y arranca API y web. Abre **http://localhost:3000**. Mantén la terminal abierta; Ctrl+C cierra API y web. Los contenedores conservan los datos.
 
-**Cuenta local de demostración:** `demo@construapp.co` · contraseña `demo-12345678`. Es una cuenta de desarrollo, sin permisos de administración. No utilizarla en producción.
+**Cuenta local de demostración:** `demo@construapp.co` · contraseña `demo-12345678`. Sin permisos de administración. En el hosting solo se habilita explícitamente para la presentación mediante `DEMO_MODE=true`; no almacenes información privada en esta cuenta compartida.
 
 **Obra preparada:** “Remodelación de habitación en Pasto · Demo”, con pintura, piso y muro. Volver a ejecutar el comando conserva los cambios de la obra existente.
 

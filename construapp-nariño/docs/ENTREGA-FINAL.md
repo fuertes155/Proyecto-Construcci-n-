@@ -4,7 +4,9 @@
 
 ## Abrir la demostración
 
-Desde la carpeta `construapp-nariño`:
+**En línea:** abre https://construapp-narino.onrender.com. Cuenta: **demo@construapp.co**. Contraseña: **demo-12345678**. El servidor es independiente de este computador. Ábrelo unos minutos antes de exponer, porque el plan gratuito puede necesitar alrededor de un minuto para despertar.
+
+**Respaldo local**, desde la carpeta `construapp-nariño`:
 
 ```powershell
 npm run demo
@@ -41,13 +43,14 @@ Los importes indicados corresponden al catálogo de la revisión. Si editas los 
 
 Entorno: Windows, Node.js 22.14.0 y npm 11.6.0.
 
-- 120 pruebas del backend y 9 del frontend aprobadas.
+- 126 pruebas del backend y 9 del frontend aprobadas, incluidas las nuevas verificaciones de hosting.
 - Compilaciones de web y API aprobadas; TypeScript de frontend y móvil aprobado, compilación TypeScript del backend aprobada.
 - Las nueve calculadoras verificadas contra PostgreSQL: sin precios faltantes en los ejemplos y totales coincidentes con la suma de materiales.
 - Flujo en navegador: invitado → cálculo → inicio de sesión → recuperación → creación de proyecto y cálculo → detalle y presupuesto.
 - Informe revisado en escritorio, 390 y 320 píxeles; formulario de creación revisado a 320 píxeles.
 - Arranque SQLite, acceso de la cuenta demo y recuperación de la obra de tres cálculos comprobados. Total equivalente al ejemplo PostgreSQL.
 - Proyecto temporal de ensayo retirado; la obra preparada conserva sus tres cálculos.
+- Despliegue de Render confirmado en estado `live`. Comprobados HTTPS, rutas profundas, inicio de sesión, cálculo, guardado, recuperación desde PostgreSQL y renovación de sesión; eliminado solo el proyecto temporal creado por la comprobación.
 
 Las capturas, datos de verificación y una copia local de PostgreSQL están en `backend/logs/entrega-final/` (carpeta ignorada por Git). El archivo `postgres-entrega-final.dump` es una copia para restauración mediante `pg_restore`; no debe publicarse, porque contiene los registros de la base local.
 
@@ -55,6 +58,7 @@ Las capturas, datos de verificación y una copia local de PostgreSQL están en `
 
 - Abre la aplicación y comprueba que la obra de ejemplo aparece.
 - Conserva la terminal del arranque abierta.
+- La terminal solo hace falta para el respaldo local; el sitio de Render sigue funcionando sin ella.
 - Ten a mano esta guía y usa la cuenta demo para evitar alterar tus otras obras.
 - Si quieres empezar la calculadora en blanco, pulsa “Limpiar medidas”.
 - Para mostrar precios, utiliza el catálogo ya cargado; abrir las páginas de las tiendas sí depende de Internet.
